@@ -45,6 +45,13 @@ export function VerifyPrompt({ user: _user }: { user: User }) {
         );
       }
 
+      const apiKeyPattern = /^svk_[0-9a-fA-F-]+\.[-_A-Za-z0-9]+$/;
+      if (!apiKeyPattern.test(apiKey)) {
+        throw new Error(
+          "Invalid NEXT_PUBLIC_SEBEVERIFY_API_KEY format. Use the raw_key value (svk_<key_id>.<secret>) returned by POST /projects/{project_id}/api-keys or regenerate endpoint.",
+        );
+      }
+
       const verifier = SebeVerify({
         apiKey,
         projectId,

@@ -6,6 +6,12 @@ export async function GET() {
   const backendUrl = process.env.NEXT_PUBLIC_SEBEVERIFY_BACKEND_URL || "";
   const webAppUrl = process.env.NEXT_PUBLIC_SEBEVERIFY_SDK_WEB_APP_URL || "";
 
+  console.log("=== SEBEVERIFY CONFIG ===");
+  console.log("API Key:", apiKey);
+  console.log("Project ID:", projectId);
+  console.log("Backend URL:", backendUrl);
+  console.log("Web App URL:", webAppUrl);
+
   return NextResponse.json({
     apiKey,
     projectId,
