@@ -24,6 +24,12 @@
    - `BETTER_AUTH_URL`: Your app URL (http://localhost:3000 for dev)
    - `NEXT_PUBLIC_APP_URL`: Same as BETTER_AUTH_URL
 
+   For client-side SDK verification flow, also set:
+   - `NEXT_PUBLIC_SEBEVERIFY_API_KEY`: SebeVerify project API key
+   - `NEXT_PUBLIC_SEBEVERIFY_PROJECT_ID`: SebeVerify project id
+   - `NEXT_PUBLIC_SEBEVERIFY_BACKEND_URL`: SebeVerify backend API base URL (e.g. http://localhost:8000)
+   - `NEXT_PUBLIC_SEBEVERIFY_SDK_WEB_APP_URL`: Hosted SebeVerify web app URL (e.g. http://localhost:3001)
+
 3. **Generate Prisma client**
    ```bash
    pnpm prisma generate

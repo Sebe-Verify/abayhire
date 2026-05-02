@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createJob } from "@/actions";
+import { checkVerificationStatus } from "@/actions/verification";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function CreateJobPage() {
@@ -15,6 +16,35 @@ export default function CreateJobPage() {
   const [salary, setSalary] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [verified, setVerified] = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    async function checkVerification() {
+      try {
+        const result = await checkVerificationStatus();
+        setVerified(result.verified);
+      } catch {
+        setVerified(false);
+      } finally {
+        setChecking(false);
+      }
+    }
+    checkVerification();
+  }, []);
+
+  if (checking) {
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-screen">
+        <div className="animate-spin h-8 w-8 border-4 border-[var(--terracotta)] border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
+  if (!verified) {
+    router.push("/dashboard");
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,12 +52,12 @@ export default function CreateJobPage() {
     setError("");
 
     try {
-      await createJob({
-        title,
-        description,
-        location,
-        type,
-        salary: salary ? parseFloat(salary) : undefined,
+      await createJob({ 
+        title, 
+        description, 
+        location, 
+        type, 
+        salary: salary ? parseFloat(salary) : undefined, 
       });
       router.push("/employer");
     } catch (err: any) {

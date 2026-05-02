@@ -1,18 +1,22 @@
 import { betterAuth } from "better-auth";
-import { Pool } from "pg";
+import { prismaAdapter } from "better-auth/adapters/prisma";
+import { prisma } from "./prisma";
 import "dotenv/config";
 
-const connectionString = process.env.DATABASE_URL;
-
-if (!connectionString) {
-  throw new Error("DATABASE_URL is not set");
-}
+const appUrl =
+  process.env.BETTER_AUTH_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  "http://localhost:3000";
 
 export const auth = betterAuth({
-  database: new Pool({
-    connectionString,
+  secret: process.env.BETTER_AUTH_SECRET,
+  database: prismaAdapter(prisma, {
+    provider: "postgresql",
   }),
+  experimental: {
+    joins: true,
+  },
   emailAndPassword: { enabled: true },
-  trustedOrigins: [process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"],
-  baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  trustedOrigins: [appUrl],
+  baseURL: appUrl,
 });

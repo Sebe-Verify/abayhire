@@ -3,7 +3,9 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { getEmployerJobs } from "@/actions";
+import { checkVerificationStatus } from "@/actions/verification";
 import { Header } from "@/components/ui/header";
+import { VerifyPrompt } from "@/components/verify-prompt";
 
 export default async function EmployerPage() {
   const session = await auth.api.getSession({
@@ -11,6 +13,7 @@ export default async function EmployerPage() {
   });
   if (!session) redirect("/signin");
 
+  const { verified } = await checkVerificationStatus();
   const jobs = await getEmployerJobs();
 
   const handleSignOut = async () => {
@@ -19,6 +22,15 @@ export default async function EmployerPage() {
       headers: await headers(),
     });
   };
+
+  if (!verified) {
+    return (
+      <div className="flex-1 flex flex-col min-h-screen">
+        <Header user={session.user} onSignOut={handleSignOut} />
+        <VerifyPrompt user={session.user} />
+      </div>
+    );
+  }
 
   const statusColors: Record<string, { bg: string; text: string }> = {
     PENDING: { bg: "bg-amber-100", text: "text-amber-800" },

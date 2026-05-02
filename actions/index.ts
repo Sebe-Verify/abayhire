@@ -3,32 +3,20 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { z } from "zod";
-
-// In-memory job store
-const jobs = new Map<string, {
-  id: string;
-  title: string;
-  description: string;
-  location: string;
-  type: string;
-  salary?: number;
-  companyId: string;
-  isActive: boolean;
-}>();
-
-const applications = new Map<string, {
-  id: string;
-  jobId: string;
-  userId: string;
-  status: string;
-}>();
+import { prisma } from "@/lib/prisma";
 
 export async function getJobs() {
-  return Array.from(jobs.values()).filter(j => j.isActive);
+  return await prisma.job.findMany({
+    where: { isActive: true },
+    include: { company: { select: { name: true, image: true } } }
+  });
 }
 
 export async function getJob(id: string) {
-  return jobs.get(id);
+  return await prisma.job.findUnique({
+    where: { id },
+    include: { company: { select: { name: true, image: true } } }
+  });
 }
 
 const createJobSchema = z.object({
@@ -47,14 +35,13 @@ export async function createJob(data: z.infer<typeof createJobSchema>) {
     throw new Error("Unauthorized");
   }
   const validated = createJobSchema.parse(data);
-  const job = {
-    id: crypto.randomUUID(),
-    ...validated,
-    companyId: session.user.id,
-    isActive: true,
-  };
-  jobs.set(job.id, job);
-  return job;
+  return await prisma.job.create({
+    data: {
+      ...validated,
+      companyId: session.user.id,
+      isActive: true,
+    }
+  });
 }
 
 export async function getEmployerJobs() {
@@ -64,7 +51,18 @@ export async function getEmployerJobs() {
   if (!session?.user) {
     throw new Error("Unauthorized");
   }
-  return Array.from(jobs.values()).filter(j => j.companyId === session.user.id);
+  return await prisma.job.findMany({
+    where: { companyId: session.user.id },
+    include: {
+      applications: {
+        include: {
+          user: {
+            select: { name: true, email: true }
+          }
+        }
+      }
+    }
+  });
 }
 
 export async function updateJob(id: string, data: z.infer<typeof createJobSchema>) {
@@ -74,13 +72,16 @@ export async function updateJob(id: string, data: z.infer<typeof createJobSchema
   if (!session?.user) {
     throw new Error("Unauthorized");
   }
-  const job = jobs.get(id);
+  
+  const job = await prisma.job.findUnique({ where: { id } });
   if (!job || job.companyId !== session.user.id) {
     throw new Error("Forbidden");
   }
-  const updated = { ...job, ...data };
-  jobs.set(id, updated);
-  return updated;
+  
+  return await prisma.job.update({
+    where: { id },
+    data,
+  });
 }
 
 export async function deleteJob(id: string) {
@@ -90,11 +91,11 @@ export async function deleteJob(id: string) {
   if (!session?.user) {
     throw new Error("Unauthorized");
   }
-  const job = jobs.get(id);
+  const job = await prisma.job.findUnique({ where: { id } });
   if (!job || job.companyId !== session.user.id) {
     throw new Error("Forbidden");
   }
-  jobs.delete(id);
+  await prisma.job.delete({ where: { id } });
   return { success: true };
 }
 
@@ -114,20 +115,25 @@ export async function applyToJob(data: z.infer<typeof applySchema>) {
   const validated = applySchema.parse(data);
   
   // Check if already applied
-  for (const app of applications.values()) {
-    if (app.jobId === validated.jobId && app.userId === session.user.id) {
-      throw new Error("Already applied");
+  const existing = await prisma.application.findFirst({
+    where: {
+      jobId: validated.jobId,
+      userId: session.user.id,
     }
+  });
+  if (existing) {
+    throw new Error("Already applied");
   }
   
-  const app = {
-    id: crypto.randomUUID(),
-    jobId: validated.jobId,
-    userId: session.user.id,
-    status: "PENDING",
-  };
-  applications.set(app.id, app);
-  return app;
+  return await prisma.application.create({
+    data: {
+      jobId: validated.jobId,
+      userId: session.user.id,
+      resumeUrl: validated.resumeUrl,
+      coverLetter: validated.coverLetter,
+      status: "PENDING",
+    }
+  });
 }
 
 export async function getMyApplications() {
@@ -137,12 +143,18 @@ export async function getMyApplications() {
   if (!session?.user) {
     throw new Error("Unauthorized");
   }
-  return Array.from(applications.values())
-    .filter(a => a.userId === session.user.id)
-    .map(app => {
-      const job = jobs.get(app.jobId);
-      return { ...app, job };
-    });
+  return await prisma.application.findMany({
+    where: { userId: session.user.id },
+    include: {
+      job: {
+        include: {
+          company: {
+            select: { name: true }
+          }
+        }
+      }
+    }
+  });
 }
 
 export async function getUserRole(): Promise<string> {
@@ -150,6 +162,10 @@ export async function getUserRole(): Promise<string> {
     headers: await headers(),
   });
   if (!session?.user) return "JOB_SEEKER";
-  // Default role
-  return "JOB_SEEKER";
+  
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true }
+  });
+  return user?.role || "JOB_SEEKER";
 }

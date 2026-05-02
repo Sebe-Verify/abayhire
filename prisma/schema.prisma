@@ -6,23 +6,26 @@ datasource db {
   provider = "postgresql"
 }
 
-model user {
+model User {
   id             String    @id @default(cuid())
-  name           String
+  name           String?
   email          String     @unique
   emailVerified  Boolean   @default(false)
   image         String?
+  verifiedAt     DateTime?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   role         String     @default("JOB_SEEKER")
 
-  sessions     session[]
-  accounts    account[]
-  jobs        job[]
-  applications application[]
+  sessions     Session[]
+  accounts    Account[]
+  jobs        Job[]
+  applications Application[]
+
+  @@map("user")
 }
 
-model session {
+model Session {
   id        String   @id @default(cuid())
   userId    String
   token     String   @unique
@@ -32,10 +35,12 @@ model session {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
 }
 
-model account {
+model Account {
   id                    String    @id @default(cuid())
   userId                String
   accountId             String
@@ -50,19 +55,23 @@ model account {
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
-  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("account")
 }
 
-model verification {
+model Verification {
   id         String   @id @default(cuid())
   identifier String
   value      String
   expiresAt  DateTime
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
+
+  @@map("verification")
 }
 
-model job {
+model Job {
   id          String   @id @default(cuid())
   title       String
   description String
@@ -74,11 +83,13 @@ model job {
   updatedAt   DateTime  @updatedAt
   isActive    Boolean  @default(true)
 
-  company user @relation(fields: [companyId], references: [id])
-  applications application[]
+  company User @relation(fields: [companyId], references: [id])
+  applications Application[]
+
+  @@map("job")
 }
 
-model application {
+model Application {
   id           String   @id @default(cuid())
   jobId        String
   userId       String
@@ -88,6 +99,8 @@ model application {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  job job @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("application")
 }
