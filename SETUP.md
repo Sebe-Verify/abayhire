@@ -22,7 +22,8 @@
    - `DATABASE_URL`: Your PostgreSQL connection string
    - `BETTER_AUTH_SECRET`: Generate a secure secret key (min 32 chars)
    - `BETTER_AUTH_URL`: Your app URL (http://localhost:3000 for dev)
-   - `NEXT_PUBLIC_APP_URL`: Same as BETTER_AUTH_URL
+   - `NEXT_PUBLIC_BETTER_AUTH_URL`: Public auth origin used by browser requests
+   - `NEXT_PUBLIC_APP_URL`: Frontend app URL (can match BETTER_AUTH_URL in local dev)
 
    For client-side SDK verification flow, also set:
    - `NEXT_PUBLIC_SEBEVERIFY_API_KEY`: SebeVerify raw API key (`raw_key` in format `svk_<key_id>.<secret>`), NOT the key id

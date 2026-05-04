@@ -19,18 +19,23 @@ export default function SignUpPage() {
     setLoading(true);
     setError("");
 
-    const { error } = await authClient.signUp.email({
-      name,
-      email,
-      password,
-    });
+    try {
+      const { error } = await authClient.signUp.email({
+        name,
+        email,
+        password,
+      });
 
-    if (error) {
-      setError(error.message || "Failed to sign up");
+      if (error) {
+        setError(error.message || "Failed to sign up");
+        setLoading(false);
+      } else {
+        router.push("/dashboard");
+        router.refresh();
+      }
+    } catch {
+      setError("Unable to reach the authentication server. Please try again.");
       setLoading(false);
-    } else {
-      router.push("/dashboard");
-      router.refresh();
     }
   };
 

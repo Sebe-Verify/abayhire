@@ -30,18 +30,16 @@ export function VerifyPrompt({ user: _user }: { user: User }) {
       const config = (await configRes.json()) as {
         apiKey?: string;
         projectId?: string;
-        backendUrl?: string;
         webAppUrl?: string;
       };
 
       const apiKey = config.apiKey;
       const projectId = config.projectId;
-      const backendUrl = config.backendUrl;
       const webAppUrl = config.webAppUrl;
 
-      if (!apiKey || !projectId || !backendUrl || !webAppUrl) {
+      if (!apiKey || !projectId || !webAppUrl) {
         throw new Error(
-          "Missing public SebeVerify env vars: NEXT_PUBLIC_SEBEVERIFY_API_KEY, NEXT_PUBLIC_SEBEVERIFY_PROJECT_ID, NEXT_PUBLIC_SEBEVERIFY_BACKEND_URL, NEXT_PUBLIC_SEBEVERIFY_SDK_WEB_APP_URL",
+          "Missing SebeVerify env vars: NEXT_PUBLIC_SEBEVERIFY_API_KEY, NEXT_PUBLIC_SEBEVERIFY_PROJECT_ID, NEXT_PUBLIC_SEBEVERIFY_SDK_WEB_APP_URL",
         );
       }
 
@@ -55,7 +53,6 @@ export function VerifyPrompt({ user: _user }: { user: User }) {
       const verifier = SebeVerify({
         apiKey,
         projectId,
-        backendUrl,
         webAppUrl,
         redirectUrl: `${window.location.origin}/dashboard`,
       });
