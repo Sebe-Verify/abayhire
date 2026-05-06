@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: abayhire
+      POSTGRES_PASSWORD: abayhire
+      POSTGRES_DB: abayhire
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U abayhire"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    build:
+      context: ..
+      dockerfile: abayhire/Dockerfile
+      target: builder
+    working_dir: /monorepo/abayhire
+    command: pnpm prisma migrate deploy
+    environment:
+      DATABASE_URL: postgresql://abayhire:abayhire@db:5432/abayhire
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    build:
+      context: ..
+      dockerfile: abayhire/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://abayhire:abayhire@db:5432/abayhire
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      NEXT_PUBLIC_BETTER_AUTH_URL: ${NEXT_PUBLIC_BETTER_AUTH_URL:-http://localhost:3000}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  postgres_data:
