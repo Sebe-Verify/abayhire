@@ -30,16 +30,14 @@ export function VerifyPrompt({ user: _user }: { user: User }) {
       const config = (await configRes.json()) as {
         apiKey?: string;
         projectId?: string;
-        webAppUrl?: string;
       };
 
       const apiKey = config.apiKey;
       const projectId = config.projectId;
-      const webAppUrl = config.webAppUrl;
 
-      if (!apiKey || !projectId || !webAppUrl) {
+      if (!apiKey || !projectId) {
         throw new Error(
-          "Missing SebeVerify env vars: NEXT_PUBLIC_SEBEVERIFY_API_KEY, NEXT_PUBLIC_SEBEVERIFY_PROJECT_ID, NEXT_PUBLIC_SEBEVERIFY_SDK_WEB_APP_URL",
+          "Missing SebeVerify env vars: NEXT_PUBLIC_SEBEVERIFY_API_KEY, NEXT_PUBLIC_SEBEVERIFY_PROJECT_ID",
         );
       }
 
@@ -53,11 +51,13 @@ export function VerifyPrompt({ user: _user }: { user: User }) {
       const verifier = SebeVerify({
         apiKey,
         projectId,
-        webAppUrl,
         redirectUrl: `${window.location.origin}/dashboard`,
       });
 
       await verifier.start();
+      // start() resolves immediately after showing the modal (desktop) or navigating (mobile).
+      // Re-enable the button so the user can retry if they cancel the modal.
+      setLoading(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to start verification");
       setLoading(false);
