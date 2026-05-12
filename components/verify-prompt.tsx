@@ -52,6 +52,7 @@ export function VerifyPrompt({ user: _user }: { user: User }) {
         apiKey,
         projectId,
         redirectUrl: `${window.location.origin}/dashboard`,
+        
       });
 
       await verifier.start();

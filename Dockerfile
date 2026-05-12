@@ -1,8 +1,11 @@
 # Build context must be the monorepo root (whole/):
 #   docker build -f abayhire/Dockerfile -t abayhire .
 
-FROM node:20-alpine AS base
-RUN corepack enable && corepack prepare pnpm@latest --activate
+FROM node:22-alpine AS base
+RUN npm config set fetch-retries 5 && \
+    npm config set fetch-retry-mintimeout 60000 && \
+    npm config set fetch-retry-maxtimeout 300000 && \
+    npm install -g pnpm@10
 
 # ---- deps ----
 FROM base AS deps
@@ -17,7 +20,11 @@ COPY abayhire/pnpm-lock.yaml      ./abayhire/pnpm-lock.yaml
 COPY abayhire/pnpm-workspace.yaml ./abayhire/pnpm-workspace.yaml
 
 WORKDIR /monorepo/abayhire
-RUN pnpm install --frozen-lockfile
+RUN pnpm config set fetch-retries 5 && \
+    pnpm config set fetch-retry-mintimeout 60000 && \
+    pnpm config set fetch-retry-maxtimeout 300000 && \
+    pnpm config set network-concurrency 4 && \
+    pnpm install --frozen-lockfile
 
 # ---- builder ----
 FROM base AS builder
@@ -37,7 +44,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm build
 
 # ---- runner ----
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
