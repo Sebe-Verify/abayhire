@@ -31,8 +31,9 @@ export async function checkVerificationStatus(): Promise<{
 }
 
 export async function completeVerification(
-  _sessionId: string,
+  sessionId: string,
 ): Promise<{ success: boolean }> {
+  void sessionId;
   const session = await auth.api.getSession({
     headers: await headers(),
   });

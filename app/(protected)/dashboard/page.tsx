@@ -2,13 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { getMyApplications, getUserRole } from "@/actions";
+import { getEmployerJobs, getJobs, getMyApplications, getUserRole } from "@/actions";
 import {
   checkVerificationStatus,
   completeVerification,
 } from "@/actions/verification";
 import { Header } from "@/components/ui/header";
 import { VerifyPrompt } from "@/components/verify-prompt";
+import { SiteFooter } from "@/components/ui/site-footer";
 
 type Props = {
   searchParams: Promise<{
@@ -31,7 +32,10 @@ export default async function DashboardPage({ searchParams }: Props) {
 
   const { verified } = await checkVerificationStatus();
   const role = await getUserRole();
-  const applications = await getMyApplications();
+  const applications = role === "JOB_SEEKER" ? await getMyApplications() : [];
+  const employerJobs = role === "EMPLOYER" ? await getEmployerJobs() : [];
+  const recommendedJobs =
+    role === "JOB_SEEKER" ? await getJobs() : [];
 
   const handleSignOut = async () => {
     "use server";
@@ -71,60 +75,168 @@ export default async function DashboardPage({ searchParams }: Props) {
           </div>
 
           {role === "EMPLOYER" ? (
-            <div className="grid md:grid-cols-2 gap-8 animate-fade-in-up stagger-1">
-              <Link
-                href="/employer/create-job"
-                className="card-elevated p-8 group"
-              >
-                <div className="w-14 h-14 bg-[var(--terracotta)] rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <svg
-                    className="w-7 h-7 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
+            <div className="space-y-8 animate-fade-in-up stagger-1">
+              <div className="grid gap-4 md:grid-cols-4">
+                <div className="card-elevated p-6">
+                  <p className="text-sm text-[var(--warm-gray)]">Open jobs</p>
+                  <p className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--charcoal)]">
+                    {employerJobs.filter((job) => job.isActive).length}
+                  </p>
                 </div>
-                <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--charcoal)] mb-2 group-hover:text-[var(--terracotta)] transition-colors">
-                  Post New Job
-                </h2>
-                <p className="text-[var(--warm-gray)]">
-                  Create a new job listing to attract top talent.
-                </p>
-              </Link>
+                <div className="card-elevated p-6">
+                  <p className="text-sm text-[var(--warm-gray)]">Applicants</p>
+                  <p className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--charcoal)]">
+                    {employerJobs.reduce((sum, job) => sum + job.applications.length, 0)}
+                  </p>
+                </div>
+                <div className="card-elevated p-6">
+                  <p className="text-sm text-[var(--warm-gray)]">Interviewing</p>
+                  <p className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--charcoal)]">
+                    {employerJobs.reduce(
+                      (sum, job) =>
+                        sum +
+                        job.applications.filter((application) => application.status === "ACCEPTED").length,
+                      0,
+                    )}
+                  </p>
+                </div>
+                <div className="card-elevated p-6">
+                  <p className="text-sm text-[var(--warm-gray)]">Verified employer</p>
+                  <p className="mt-3 text-lg font-semibold text-[var(--charcoal)]">
+                    Active
+                  </p>
+                </div>
+              </div>
 
-              <Link href="/employer" className="card-elevated p-8 group">
-                <div className="w-14 h-14 bg-[var(--ethiopian-blue)] rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <svg
-                    className="w-7 h-7 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                    />
-                  </svg>
-                </div>
-                <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--charcoal)] mb-2 group-hover:text-[var(--terracotta)] transition-colors">
-                  Manage Jobs
+              <div className="grid md:grid-cols-2 gap-8">
+                <Link
+                  href="/employer/create-job"
+                  className="card-elevated p-8 group"
+                >
+                  <div className="w-14 h-14 bg-[var(--terracotta)] rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <svg
+                      className="w-7 h-7 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
+                  </div>
+                  <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--charcoal)] mb-2 group-hover:text-[var(--terracotta)] transition-colors">
+                    Post New Job
+                  </h2>
+                  <p className="text-[var(--warm-gray)]">
+                    Create a new job listing to attract top talent.
+                  </p>
+                </Link>
+
+                <Link href="/employer" className="card-elevated p-8 group">
+                  <div className="w-14 h-14 bg-[var(--ethiopian-blue)] rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <svg
+                      className="w-7 h-7 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                      />
+                    </svg>
+                  </div>
+                  <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--charcoal)] mb-2 group-hover:text-[var(--terracotta)] transition-colors">
+                    Manage Jobs
+                  </h2>
+                  <p className="text-[var(--warm-gray)]">
+                    View and manage your posted job listings.
+                  </p>
+                </Link>
+              </div>
+
+              <div className="card-elevated p-8">
+                <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--charcoal)]">
+                  Hiring pipeline snapshot
                 </h2>
-                <p className="text-[var(--warm-gray)]">
-                  View and manage your posted job listings.
-                </p>
-              </Link>
+                <div className="mt-6 grid gap-6 lg:grid-cols-3">
+                  {[
+                    {
+                      title: "Applied",
+                      count: employerJobs.reduce(
+                        (sum, job) =>
+                          sum +
+                          job.applications.filter((application) => application.status === "PENDING").length,
+                        0,
+                      ),
+                    },
+                    {
+                      title: "Interviewing",
+                      count: employerJobs.reduce(
+                        (sum, job) =>
+                          sum +
+                          job.applications.filter((application) => application.status === "ACCEPTED").length,
+                        0,
+                      ),
+                    },
+                    {
+                      title: "Declined",
+                      count: employerJobs.reduce(
+                        (sum, job) =>
+                          sum +
+                          job.applications.filter((application) => application.status === "REJECTED").length,
+                        0,
+                      ),
+                    },
+                  ].map((item) => (
+                    <div key={item.title} className="rounded border border-[var(--cream-dark)] bg-[var(--cream)] p-5">
+                      <p className="text-sm font-semibold text-[var(--charcoal)]">
+                        {item.title}
+                      </p>
+                      <p className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--charcoal)]">
+                        {item.count}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           ) : (
-            <div>
+            <div className="space-y-8">
+              <div className="grid gap-4 md:grid-cols-4 animate-fade-in-up stagger-1">
+                <div className="card-elevated p-6">
+                  <p className="text-sm text-[var(--warm-gray)]">Applications</p>
+                  <p className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--charcoal)]">
+                    {applications.length}
+                  </p>
+                </div>
+                <div className="card-elevated p-6">
+                  <p className="text-sm text-[var(--warm-gray)]">Interviewing</p>
+                  <p className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--charcoal)]">
+                    {applications.filter((application) => application.status === "ACCEPTED").length}
+                  </p>
+                </div>
+                <div className="card-elevated p-6">
+                  <p className="text-sm text-[var(--warm-gray)]">In review</p>
+                  <p className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--charcoal)]">
+                    {applications.filter((application) => application.status === "PENDING").length}
+                  </p>
+                </div>
+                <div className="card-elevated p-6">
+                  <p className="text-sm text-[var(--warm-gray)]">Recommended roles</p>
+                  <p className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--charcoal)]">
+                    {recommendedJobs.slice(0, 3).length}
+                  </p>
+                </div>
+              </div>
+
+              <div>
               <div className="flex items-center justify-between mb-8 animate-fade-in-up stagger-1">
                 <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--charcoal)]">
                   My Applications
@@ -202,26 +314,41 @@ export default async function DashboardPage({ searchParams }: Props) {
                   ))}
                 </div>
               )}
+              </div>
+
+              <div className="card-elevated p-8 animate-fade-in-up stagger-3">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--charcoal)]">
+                      Recommended next roles
+                    </h2>
+                    <p className="mt-2 text-sm text-[var(--warm-gray)]">
+                      A richer recommendation engine is planned into the new architecture. For now, these are the newest open roles.
+                    </p>
+                  </div>
+                  <Link href="/jobs" className="btn-secondary text-sm">
+                    View all jobs
+                  </Link>
+                </div>
+                <div className="mt-6 grid gap-4 md:grid-cols-3">
+                  {recommendedJobs.slice(0, 3).map((job) => (
+                    <div key={job.id} className="rounded border border-[var(--cream-dark)] bg-[var(--cream)] p-5">
+                      <p className="font-semibold text-[var(--charcoal)]">{job.title}</p>
+                      <p className="mt-1 text-sm text-[var(--warm-gray)]">
+                        {job.company.name} • {job.location}
+                      </p>
+                      <Link href={`/jobs/${job.id}`} className="mt-4 inline-block text-sm font-semibold text-[var(--terracotta)]">
+                        View role
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </div>
       </main>
-
-      <footer className="bg-[var(--charcoal)] text-white py-8">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <Link
-              href="/"
-              className="font-[family-name:var(--font-display)] text-xl"
-            >
-              Abay<span className="text-[var(--terracotta)]">Hire</span>
-            </Link>
-            <p className="text-sm text-gray-400">
-              © {new Date().getFullYear()} AbayHire. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

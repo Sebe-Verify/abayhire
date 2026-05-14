@@ -6,7 +6,9 @@ interface JobCardProps {
     title: string;
     type: string;
     location: string;
+    description?: string;
     salary?: number | null;
+    applications?: { id: string }[];
     company: {
       name: string | null;
       image?: string | null;
@@ -26,19 +28,25 @@ export function JobCard({ job }: JobCardProps) {
     <Link href={`/jobs/${job.id}`} className="block group">
       <article className="card-elevated p-6 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-1 h-full bg-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
+
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <h3 className="font-[family-name:var(--font-display)] text-xl text-[var(--text)] group-hover:text-[var(--primary)] transition-colors truncate">
+            <h3 className="font-[family-name:var(--font-display)] text-xl text-[var(--text)] group-hover:text-[var(--primary)] transition-colors">
               {job.title}
             </h3>
             <p className="text-[var(--text-muted)] mt-1">{job.company.name || "Company"}</p>
           </div>
-          
+
           <span className={`badge ${typeColors[job.type] || "badge-secondary"} shrink-0`}>
             {job.type.replace("_", " ")}
           </span>
         </div>
+
+        {job.description ? (
+          <p className="mt-4 line-clamp-3 text-sm leading-7 text-[var(--text-muted)]">
+            {job.description}
+          </p>
+        ) : null}
 
         <div className="mt-4 pt-4 border-t border-[var(--border)] flex items-center justify-between text-sm">
           <span className="text-[var(--text-muted)] flex items-center gap-2">
@@ -51,6 +59,11 @@ export function JobCard({ job }: JobCardProps) {
           <span className="font-semibold text-[var(--text)]">
             {job.salary ? `$${Number(job.salary).toLocaleString()}` : "Salary negotiable"}
           </span>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between text-xs text-[var(--text-muted)]">
+          <span>Verified employer workflow</span>
+          <span>{job.applications?.length ?? 0} applicant{job.applications?.length === 1 ? "" : "s"}</span>
         </div>
       </article>
     </Link>

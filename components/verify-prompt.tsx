@@ -9,7 +9,7 @@ interface User {
   email: string;
 }
 
-export function VerifyPrompt({ user: _user }: { user: User }) {
+export function VerifyPrompt({ user }: { user: User }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -91,8 +91,8 @@ export function VerifyPrompt({ user: _user }: { user: User }) {
             </h1>
 
             <p className="text-[var(--warm-gray)] mb-6">
-              To protect our community, we need to verify your identity before
-              you can access the dashboard.
+              To protect our community, we need to verify {user.name}&apos;s
+              identity before you can access the dashboard.
             </p>
 
             {error && (

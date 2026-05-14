@@ -5,19 +5,7 @@ import { headers } from "next/headers";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 
-export async function getJobs() {
-  return await prisma.job.findMany({
-    where: { isActive: true },
-    include: { company: { select: { name: true, image: true } } }
-  });
-}
-
-export async function getJob(id: string) {
-  return await prisma.job.findUnique({
-    where: { id },
-    include: { company: { select: { name: true, image: true } } }
-  });
-}
+const roleSchema = z.enum(["JOB_SEEKER", "EMPLOYER"]);
 
 const createJobSchema = z.object({
   title: z.string().min(1),
@@ -27,145 +15,265 @@ const createJobSchema = z.object({
   salary: z.number().optional(),
 });
 
-export async function createJob(data: z.infer<typeof createJobSchema>) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
-  const validated = createJobSchema.parse(data);
-  return await prisma.job.create({
-    data: {
-      ...validated,
-      companyId: session.user.id,
-      isActive: true,
-    }
-  });
-}
-
-export async function getEmployerJobs() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
-  return await prisma.job.findMany({
-    where: { companyId: session.user.id },
-    include: {
-      applications: {
-        include: {
-          user: {
-            select: { name: true, email: true }
-          }
-        }
-      }
-    }
-  });
-}
-
-export async function updateJob(id: string, data: z.infer<typeof createJobSchema>) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
-  
-  const job = await prisma.job.findUnique({ where: { id } });
-  if (!job || job.companyId !== session.user.id) {
-    throw new Error("Forbidden");
-  }
-  
-  return await prisma.job.update({
-    where: { id },
-    data,
-  });
-}
-
-export async function deleteJob(id: string) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
-  const job = await prisma.job.findUnique({ where: { id } });
-  if (!job || job.companyId !== session.user.id) {
-    throw new Error("Forbidden");
-  }
-  await prisma.job.delete({ where: { id } });
-  return { success: true };
-}
-
 const applySchema = z.object({
   jobId: z.string(),
   resumeUrl: z.string().optional(),
   coverLetter: z.string().optional(),
 });
 
-export async function applyToJob(data: z.infer<typeof applySchema>) {
+const searchJobsSchema = z.object({
+  query: z.string().optional(),
+  location: z.string().optional(),
+  type: z.string().optional(),
+});
+
+async function getCurrentUser() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
+
   if (!session?.user) {
+    return null;
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      id: true,
+      role: true,
+      name: true,
+      email: true,
+      verifiedAt: true,
+    },
+  });
+
+  if (!user) {
+    return null;
+  }
+
+  return { session, user };
+}
+
+async function requireRole(role: z.infer<typeof roleSchema>) {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
     throw new Error("Unauthorized");
   }
+
+  if (currentUser.user.role !== role) {
+    throw new Error("Forbidden");
+  }
+
+  return currentUser;
+}
+
+export async function getJobs(filters?: z.infer<typeof searchJobsSchema>) {
+  const validatedFilters = searchJobsSchema.optional().parse(filters);
+  const query = validatedFilters?.query?.trim();
+  const location = validatedFilters?.location?.trim();
+  const type = validatedFilters?.type?.trim();
+
+  return await prisma.job.findMany({
+    where: {
+      isActive: true,
+      ...(query
+        ? {
+            OR: [
+              { title: { contains: query, mode: "insensitive" } },
+              { description: { contains: query, mode: "insensitive" } },
+              {
+                company: {
+                  name: { contains: query, mode: "insensitive" },
+                },
+              },
+            ],
+          }
+        : {}),
+      ...(location
+        ? { location: { contains: location, mode: "insensitive" } }
+        : {}),
+      ...(type && type !== "ALL" ? { type } : {}),
+    },
+    include: {
+      company: { select: { name: true, image: true } },
+      applications: { select: { id: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function getJob(id: string) {
+  return await prisma.job.findUnique({
+    where: { id },
+    include: {
+      company: { select: { name: true, image: true } },
+      applications: {
+        select: {
+          id: true,
+          status: true,
+        },
+      },
+    },
+  });
+}
+
+export async function createJob(data: z.infer<typeof createJobSchema>) {
+  const currentUser = await requireRole("EMPLOYER");
+  const validated = createJobSchema.parse(data);
+
+  return await prisma.job.create({
+    data: {
+      ...validated,
+      companyId: currentUser.user.id,
+      isActive: true,
+    },
+  });
+}
+
+export async function getEmployerJobs() {
+  const currentUser = await requireRole("EMPLOYER");
+
+  return await prisma.job.findMany({
+    where: { companyId: currentUser.user.id },
+    include: {
+      applications: {
+        include: {
+          user: {
+            select: { name: true, email: true },
+          },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function updateJob(
+  id: string,
+  data: z.infer<typeof createJobSchema>,
+) {
+  const currentUser = await requireRole("EMPLOYER");
+  const validated = createJobSchema.parse(data);
+
+  const job = await prisma.job.findUnique({ where: { id } });
+  if (!job || job.companyId !== currentUser.user.id) {
+    throw new Error("Forbidden");
+  }
+
+  return await prisma.job.update({
+    where: { id },
+    data: validated,
+  });
+}
+
+export async function deleteJob(id: string) {
+  const currentUser = await requireRole("EMPLOYER");
+  const job = await prisma.job.findUnique({ where: { id } });
+
+  if (!job || job.companyId !== currentUser.user.id) {
+    throw new Error("Forbidden");
+  }
+
+  await prisma.job.delete({ where: { id } });
+  return { success: true };
+}
+
+export async function applyToJob(data: z.infer<typeof applySchema>) {
+  const currentUser = await requireRole("JOB_SEEKER");
   const validated = applySchema.parse(data);
-  
-  // Check if already applied
+
+  const job = await prisma.job.findUnique({
+    where: { id: validated.jobId },
+    select: {
+      id: true,
+      companyId: true,
+      isActive: true,
+    },
+  });
+
+  if (!job || !job.isActive) {
+    throw new Error("This job is no longer accepting applications");
+  }
+
+  if (job.companyId === currentUser.user.id) {
+    throw new Error("You cannot apply to your own job post");
+  }
+
   const existing = await prisma.application.findFirst({
     where: {
       jobId: validated.jobId,
-      userId: session.user.id,
-    }
+      userId: currentUser.user.id,
+    },
   });
+
   if (existing) {
     throw new Error("Already applied");
   }
-  
+
   return await prisma.application.create({
     data: {
       jobId: validated.jobId,
-      userId: session.user.id,
+      userId: currentUser.user.id,
       resumeUrl: validated.resumeUrl,
       coverLetter: validated.coverLetter,
       status: "PENDING",
-    }
+    },
   });
 }
 
 export async function getMyApplications() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
+  const currentUser = await requireRole("JOB_SEEKER");
+
   return await prisma.application.findMany({
-    where: { userId: session.user.id },
+    where: { userId: currentUser.user.id },
     include: {
       job: {
         include: {
           company: {
-            select: { name: true }
-          }
-        }
-      }
-    }
+            select: { name: true },
+          },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
   });
 }
 
 export async function getUserRole(): Promise<string> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
+  const currentUser = await getCurrentUser();
+  return currentUser?.user.role || "JOB_SEEKER";
+}
+
+export async function setUserRole(role: z.infer<typeof roleSchema>) {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    throw new Error("Unauthorized");
+  }
+
+  const validatedRole = roleSchema.parse(role);
+
+  await prisma.user.update({
+    where: { id: currentUser.user.id },
+    data: { role: validatedRole },
   });
-  if (!session?.user) return "JOB_SEEKER";
-  
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true }
-  });
-  return user?.role || "JOB_SEEKER";
+
+  return { success: true, role: validatedRole };
+}
+
+export async function getCurrentUserSummary() {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    return null;
+  }
+
+  return {
+    id: currentUser.user.id,
+    name: currentUser.user.name,
+    email: currentUser.user.email,
+    role: currentUser.user.role,
+    verifiedAt: currentUser.user.verifiedAt,
+  };
 }

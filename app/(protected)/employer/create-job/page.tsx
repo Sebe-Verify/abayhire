@@ -60,8 +60,8 @@ export default function CreateJobPage() {
         salary: salary ? parseFloat(salary) : undefined, 
       });
       router.push("/employer");
-    } catch (err: any) {
-      setError(err.message || "Failed to create job");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create job");
       setLoading(false);
     }
   };

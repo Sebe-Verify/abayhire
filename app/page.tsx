@@ -1,7 +1,13 @@
 import Link from "next/link";
-import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { Header } from "@/components/ui/header";
+import { SectionHeading } from "@/components/ui/section-heading";
+import { SiteFooter } from "@/components/ui/site-footer";
+import {
+  featuredMetrics,
+  featureHighlights,
+} from "@/lib/site-content";
 
 export default async function Home() {
   const session = await auth.api.getSession({
@@ -16,109 +22,190 @@ export default async function Home() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <Header user={session?.user} onSignOut={handleSignOut} />
 
       <main className="flex-1">
-        <section className="relative py-24 lg:py-32 overflow-hidden">
-          <div className="absolute inset-0 gradient-mesh" />
-          <div className="absolute inset-0 ethiopian-pattern opacity-30" />
-          
-          <div className="absolute top-20 left-10 w-32 h-32 border border-[var(--terracotta)] opacity-10 rotate-12" />
-          <div className="absolute bottom-20 right-10 w-24 h-24 border border-[var(--ochre)] opacity-15 -rotate-12" />
-          
-          <div className="container mx-auto px-6 relative">
-            <div className="max-w-3xl mx-auto text-center">
-              <div className="animate-fade-in-up">
-                <span className="badge badge-primary mb-6">Ethiopia&apos;s Leading Job Platform</span>
-              </div>
-              
-              <h1 className="font-[family-name:var(--font-display)] text-5xl lg:text-7xl text-[var(--charcoal)] leading-tight mb-6 animate-fade-in-up stagger-1">
-                Find Your
-                <span className="block text-[var(--terracotta)]">Dream Career</span>
+        <section className="gradient-mesh py-20 md:py-28">
+          <div className="container mx-auto grid gap-12 px-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+            <div className="max-w-3xl">
+              <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[var(--primary)]">
+                Premium hiring platform for Ethiopia and Africa
+              </p>
+              <h1 className="mt-4 font-[family-name:var(--font-display)] text-5xl leading-tight text-[var(--text)] md:text-7xl">
+                Upgrade hiring from job board chaos to structured recruiting.
               </h1>
-              
-              <p className="text-xl text-[var(--warm-gray)] max-w-2xl mx-auto mb-10 animate-fade-in-up stagger-2">
-                Connect with top employers and discover opportunities that match your skills and aspirations.
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--text-muted)]">
+                AbayHire is evolving into a world-class hiring ecosystem with
+                verified employers, candidate-first applications, searchable job
+                discovery, and ATS-style recruiter workflows designed for local
+                realities.
               </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up stagger-3">
-                <Link href="/jobs" className="btn-primary text-lg">
-                  Explore Opportunities
+
+              <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+                <Link href="/jobs" className="btn-primary text-center text-base">
+                  Explore roles
                 </Link>
-                <Link href={session ? "/dashboard" : "/signup"} className="btn-secondary text-lg">
-                  {session ? "Go to Dashboard" : "Post a Job"}
+                <Link
+                  href={session ? "/dashboard" : "/signup"}
+                  className="btn-secondary text-center text-base"
+                >
+                  {session ? "Open dashboard" : "Create employer account"}
                 </Link>
+              </div>
+
+              <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {featuredMetrics.map((metric) => (
+                  <div key={metric.label} className="card-elevated p-5">
+                    <p className="font-[family-name:var(--font-display)] text-3xl text-[var(--text)]">
+                      {metric.value}
+                    </p>
+                    <p className="mt-2 text-sm text-[var(--text-muted)]">
+                      {metric.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="card-elevated overflow-hidden p-6">
+              <div className="rounded-md border border-[var(--border)] bg-[var(--bg)] p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--text)]">
+                      Recruiter pipeline
+                    </p>
+                    <p className="mt-1 text-sm text-[var(--text-muted)]">
+                      Product Designer, Addis Ababa
+                    </p>
+                  </div>
+                  <span className="badge badge-primary">Urgent</span>
+                </div>
+
+                <div className="mt-6 grid gap-3 md:grid-cols-3">
+                  {[
+                    {
+                      title: "Applied",
+                      count: "42",
+                      items: ["Selam T.", "Hana T."],
+                    },
+                    {
+                      title: "Interview",
+                      count: "8",
+                      items: ["Meron A.", "Yonas K."],
+                    },
+                    {
+                      title: "Offer",
+                      count: "2",
+                      items: ["Lulit G.", "Abel S."],
+                    },
+                  ].map((column) => (
+                    <div
+                      key={column.title}
+                      className="rounded-md border border-[var(--border)] bg-[var(--surface)] p-4"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-sm font-semibold text-[var(--text)]">
+                          {column.title}
+                        </h2>
+                        <span className="text-xs text-[var(--text-muted)]">
+                          {column.count}
+                        </span>
+                      </div>
+                      <div className="mt-4 space-y-3">
+                        {column.items.map((item) => (
+                          <div
+                            key={item}
+                            className="rounded border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm text-[var(--text)]"
+                          >
+                            {item}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 rounded-md border border-[var(--border)] bg-[var(--surface)] p-4">
+                  <p className="text-sm font-semibold text-[var(--text)]">
+                    Candidate experience snapshot
+                  </p>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {[
+                      "Mobile-friendly application flow",
+                      "Verified employer trust signal",
+                      "Status updates and interview reminders",
+                      "SEO-ready public role pages",
+                    ].map((item) => (
+                      <div
+                        key={item}
+                        className="rounded border border-[var(--border)] px-3 py-2 text-sm text-[var(--text-muted)]"
+                      >
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        <div className="divider-pattern" />
-
-        <section className="py-20 lg:py-28 bg-white">
+        <section className="bg-[var(--surface)] py-16 md:py-24">
           <div className="container mx-auto px-6">
-            <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
-              <div className="text-center animate-fade-in-up stagger-1">
-                <div className="w-16 h-16 mx-auto mb-6 bg-[var(--cream)] rounded-full flex items-center justify-center">
-                  <svg className="w-8 h-8 text-[var(--terracotta)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-                <h3 className="font-[family-name:var(--font-display)] text-xl text-[var(--charcoal)] mb-3">
-                  Search Jobs
-                </h3>
-                <p className="text-[var(--warm-gray)]">
-                  Browse thousands of opportunities from verified employers across Ethiopia.
-                </p>
-              </div>
+            <SectionHeading
+              eyebrow="What the platform is becoming"
+              title="Built for the whole hiring journey, not just the posting."
+              description="The redesign aligns public discovery, candidate experience, recruiter execution, and platform governance so the product can grow into a credible regional hiring system."
+            />
 
-              <div className="text-center animate-fade-in-up stagger-2">
-                <div className="w-16 h-16 mx-auto mb-6 bg-[var(--cream)] rounded-full flex items-center justify-center">
-                  <svg className="w-8 h-8 text-[var(--terracotta)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <h3 className="font-[family-name:var(--font-display)] text-xl text-[var(--charcoal)] mb-3">
-                  Apply with Ease
-                </h3>
-                <p className="text-[var(--warm-gray)]">
-                  One-click applications to multiple positions. Track your progress effortlessly.
-                </p>
-              </div>
-
-              <div className="text-center animate-fade-in-up stagger-3">
-                <div className="w-16 h-16 mx-auto mb-6 bg-[var(--cream)] rounded-full flex items-center justify-center">
-                  <svg className="w-8 h-8 text-[var(--terracotta)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                  </svg>
-                </div>
-                <h3 className="font-[family-name:var(--font-display)] text-xl text-[var(--charcoal)] mb-3">
-                  Build Your Career
-                </h3>
-                <p className="text-[var(--warm-gray)]">
-                  Connect with industry leaders and take the next step in your professional journey.
-                </p>
-              </div>
+            <div className="mt-12 grid gap-6 md:grid-cols-3">
+              {featureHighlights.map((feature) => (
+                <article key={feature.title} className="card-elevated p-8">
+                  <h3 className="text-xl font-semibold text-[var(--text)]">
+                    {feature.title}
+                  </h3>
+                  <p className="mt-4 text-sm leading-7 text-[var(--text-muted)]">
+                    {feature.description}
+                  </p>
+                </article>
+              ))}
             </div>
           </div>
         </section>
 
-        <section className="py-20 lg:py-28 gradient-mesh">
+        <section className="py-16 md:py-24">
           <div className="container mx-auto px-6">
-            <div className="max-w-2xl mx-auto text-center">
-              <h2 className="font-[family-name:var(--font-display)] text-4xl text-[var(--charcoal)] mb-6 animate-fade-in-up">
-                Ready to Get Started?
-              </h2>
-              <p className="text-lg text-[var(--warm-gray)] mb-8 animate-fade-in-up stagger-1">
-                Join thousands of job seekers and employers who have found their perfect match on AbayHire.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up stagger-2">
-                <Link href="/signup" className="btn-primary">
-                  Create Account
+            <div className="grid gap-6 lg:grid-cols-2">
+              <div className="card-elevated p-8">
+                <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[var(--primary)]">
+                  For recruiters
+                </p>
+                <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--text)]">
+                  Run a disciplined hiring process.
+                </h2>
+                <p className="mt-4 text-base leading-7 text-[var(--text-muted)]">
+                  Post faster, shortlist with confidence, and manage interviews
+                  and offers from a dashboard built for productivity.
+                </p>
+                <Link href="/employers" className="mt-6 inline-block btn-primary">
+                  See employer workflows
                 </Link>
-                <Link href="/jobs" className="btn-secondary">
-                  Browse Jobs
+              </div>
+
+              <div className="card-elevated p-8">
+                <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[var(--primary)]">
+                  For candidates
+                </p>
+                <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--text)]">
+                  Apply with clarity, not guesswork.
+                </h2>
+                <p className="mt-4 text-base leading-7 text-[var(--text-muted)]">
+                  Understand roles quickly, trust the employer behind them, and
+                  track what happens after you hit apply.
+                </p>
+                <Link href="/candidates" className="mt-6 inline-block btn-primary">
+                  See candidate experience
                 </Link>
               </div>
             </div>
@@ -126,26 +213,7 @@ export default async function Home() {
         </section>
       </main>
 
-      <footer className="bg-[var(--charcoal)] text-white py-12">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div>
-              <Link href="/" className="font-[family-name:var(--font-display)] text-2xl">
-                Abay<span className="text-[var(--terracotta)]">Hire</span>
-              </Link>
-              <p className="text-gray-400 mt-2 text-sm">Ethiopia&apos;s premier hiring platform</p>
-            </div>
-            <div className="flex gap-8 text-sm text-gray-400">
-              <Link href="/jobs" className="hover:text-white transition-colors">Jobs</Link>
-              <Link href="/signin" className="hover:text-white transition-colors">Sign In</Link>
-              <Link href="/signup" className="hover:text-white transition-colors">Sign Up</Link>
-            </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-gray-700 text-center text-sm text-gray-500">
-            © {new Date().getFullYear()} AbayHire. All rights reserved.
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

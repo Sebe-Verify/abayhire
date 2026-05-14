@@ -1,28 +1,11 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
-  const { theme, setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const { setTheme, resolvedTheme } = useTheme();
 
   const isDark = resolvedTheme === "dark";
-
-  if (!mounted) {
-    return (
-      <button
-        className="relative w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 bg-[var(--surface)] border border-[var(--border)]"
-        aria-label="Toggle theme"
-      >
-        <div className="w-5 h-5" />
-      </button>
-    );
-  }
 
   return (
     <button

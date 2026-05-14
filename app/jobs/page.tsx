@@ -2,70 +2,95 @@ import Link from "next/link";
 import { getJobs } from "@/actions";
 import { Header } from "@/components/ui/header";
 import { JobCard } from "@/components/ui/job-card";
+import { JobSearchFilters } from "@/components/ui/job-search-filters";
+import { SectionHeading } from "@/components/ui/section-heading";
+import { SiteFooter } from "@/components/ui/site-footer";
 
 export const dynamic = "force-dynamic";
 
-export default async function JobsPage() {
-  const jobs = await getJobs();
+type JobsPageProps = {
+  searchParams: Promise<{
+    query?: string;
+    location?: string;
+    type?: string;
+  }>;
+};
+
+export default async function JobsPage({ searchParams }: JobsPageProps) {
+  const params = await searchParams;
+  const jobs = await getJobs({
+    query: params.query,
+    location: params.location,
+    type: params.type,
+  });
+
+  const hasFilters = Boolean(params.query || params.location || params.type);
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <Header />
 
-      <main className="flex-1 py-12 lg:py-20">
-        <div className="container mx-auto px-6">
-          <div className="max-w-2xl mb-12">
-            <h1 className="font-[family-name:var(--font-display)] text-4xl lg:text-5xl text-[var(--charcoal)] mb-4 animate-fade-in-up">
-              Open Positions
-            </h1>
-            <p className="text-lg text-[var(--warm-gray)] animate-fade-in-up stagger-1">
-              Discover your next opportunity from Ethiopia&apos;s top employers.
-            </p>
-          </div>
+      <main className="flex-1">
+        <section className="gradient-mesh py-16 md:py-24">
+          <div className="container mx-auto px-6">
+            <SectionHeading
+              eyebrow="Job discovery"
+              title="Search open roles with more signal and less friction."
+              description="Keyword search, location-aware filtering, and cleaner job cards are the foundation of a better candidate acquisition funnel."
+            />
 
-          {jobs.length === 0 ? (
-            <div className="text-center py-20 animate-fade-in">
-              <div className="w-24 h-24 mx-auto mb-6 bg-[var(--cream)] rounded-full flex items-center justify-center">
-                <svg className="w-12 h-12 text-[var(--warm-gray)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                </svg>
+            <div className="mt-10">
+              <JobSearchFilters />
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-[var(--surface)] py-12 md:py-16">
+          <div className="container mx-auto px-6">
+            <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+              <div>
+                <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--text)]">
+                  {jobs.length} open role{jobs.length === 1 ? "" : "s"}
+                </h2>
+                <p className="mt-2 text-sm text-[var(--text-muted)]">
+                  {hasFilters
+                    ? "Filtered results based on your current search."
+                    : "Browse active opportunities from employers hiring now."}
+                </p>
               </div>
-              <h2 className="font-[family-name:var(--font-display)] text-2xl text-[var(--charcoal)] mb-2">
-                No Positions Available
-              </h2>
-              <p className="text-[var(--warm-gray)] mb-6">
-                Check back soon for new opportunities.
-              </p>
-              <Link href="/" className="btn-primary inline-block">
-                Back to Home
-              </Link>
+              {hasFilters ? (
+                <Link href="/jobs" className="text-sm font-semibold text-[var(--primary)]">
+                  Clear filters
+                </Link>
+              ) : null}
             </div>
-          ) : (
-            <div className="grid md:grid-cols-2 gap-6">
-              {jobs.map((job, index) => (
-                <div
-                  key={job.id}
-                  className="animate-fade-in-up"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <JobCard job={job} />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+
+            {jobs.length === 0 ? (
+              <div className="card-elevated p-12 text-center">
+                <h3 className="font-[family-name:var(--font-display)] text-2xl text-[var(--text)]">
+                  No jobs match this search yet
+                </h3>
+                <p className="mt-3 text-sm leading-7 text-[var(--text-muted)]">
+                  Try broadening the title, city, or job type filter. As the
+                  platform grows, these search surfaces will also expand into
+                  categories, salary insights, and recommendations.
+                </p>
+                <Link href="/jobs" className="btn-primary mt-6 inline-block">
+                  Reset search
+                </Link>
+              </div>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {jobs.map((job) => (
+                  <JobCard key={job.id} job={job} />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
       </main>
 
-      <footer className="bg-[var(--charcoal)] text-white py-8">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <Link href="/" className="font-[family-name:var(--font-display)] text-xl">
-              Abay<span className="text-[var(--terracotta)]">Hire</span>
-            </Link>
-            <p className="text-sm text-gray-400">© {new Date().getFullYear()} AbayHire. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

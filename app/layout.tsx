@@ -1,24 +1,28 @@
 import type { Metadata } from "next";
-import { DM_Serif_Display, Outfit } from "next/font/google";
 import "./globals.css";
 import { ThemeWrapper } from "@/components/theme-wrapper";
 
-const displayFont = DM_Serif_Display({
-  variable: "--font-display",
-  weight: "400",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const bodyFont = Outfit({
-  variable: "--font-body",
-  subsets: ["latin"],
-  display: "swap",
-});
-
 export const metadata: Metadata = {
-  title: "Abay Hire - Find Your Dream Job",
-  description: "Ethiopia's premier hiring platform connecting talent with opportunity",
+  metadataBase: new URL("https://abayhire.com"),
+  title: {
+    default: "AbayHire | Modern hiring platform for Ethiopia and Africa",
+    template: "%s | AbayHire",
+  },
+  description:
+    "AbayHire is evolving into a modern hiring platform with stronger job discovery, recruiter workflows, employer trust, and candidate experience.",
+  keywords: [
+    "Ethiopia jobs",
+    "Africa recruitment platform",
+    "ATS",
+    "candidate portal",
+    "employer hiring software",
+  ],
+  openGraph: {
+    title: "AbayHire",
+    description:
+      "A modern hiring platform for Ethiopia and the wider African talent market.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -28,9 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${displayFont.variable} ${bodyFont.variable} min-h-full flex flex-col antialiased`}
-      >
+      <body className="min-h-full flex flex-col antialiased">
         <ThemeWrapper>{children}</ThemeWrapper>
       </body>
     </html>

@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { getEmployerJobs } from "@/actions";
 import { checkVerificationStatus } from "@/actions/verification";
 import { Header } from "@/components/ui/header";
+import { SiteFooter } from "@/components/ui/site-footer";
 import { VerifyPrompt } from "@/components/verify-prompt";
 
 export default async function EmployerPage() {
@@ -137,16 +138,7 @@ export default async function EmployerPage() {
         </div>
       </main>
 
-      <footer className="bg-[var(--charcoal)] text-white py-8">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <Link href="/" className="font-[family-name:var(--font-display)] text-xl">
-              Abay<span className="text-[var(--terracotta)]">Hire</span>
-            </Link>
-            <p className="text-sm text-gray-400">© {new Date().getFullYear()} AbayHire. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
