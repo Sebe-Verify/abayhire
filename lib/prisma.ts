@@ -1,11 +1,9 @@
-import { PrismaClient } from "@prisma/client";
-import { Pool } from "pg";
+import { PrismaClient } from "@/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import "dotenv/config";
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
-  prismaPool?: Pool;
 };
 
 function createPrismaClient() {
@@ -17,12 +15,10 @@ function createPrismaClient() {
     );
   }
 
-  const pool = globalForPrisma.prismaPool ?? new Pool({ connectionString });
-  if (!globalForPrisma.prismaPool && process.env.NODE_ENV !== "production") {
-    globalForPrisma.prismaPool = pool;
-  }
-
-  const adapter = new PrismaPg(pool);
+  const normalizedConnectionString = normalizeDatabaseUrl(connectionString);
+  const adapter = new PrismaPg({
+    connectionString: normalizedConnectionString,
+  });
   return new PrismaClient({ adapter });
 }
 
@@ -30,4 +26,25 @@ export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
+}
+
+function normalizeDatabaseUrl(connectionString: string) {
+  try {
+    const url = new URL(connectionString);
+    const sslMode = url.searchParams.get("sslmode");
+    const useLibpqCompat = url.searchParams.get("uselibpqcompat");
+
+    if (
+      useLibpqCompat !== "true" &&
+      (sslMode === "prefer" ||
+        sslMode === "require" ||
+        sslMode === "verify-ca")
+    ) {
+      url.searchParams.set("sslmode", "verify-full");
+    }
+
+    return url.toString();
+  } catch {
+    return connectionString;
+  }
 }

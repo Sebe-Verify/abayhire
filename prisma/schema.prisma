@@ -1,5 +1,7 @@
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client"
+  output     = "../generated/prisma"
+  engineType = "client"
 }
 
 datasource db {
@@ -37,6 +39,7 @@ model Session {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("session")
 }
 
@@ -57,6 +60,8 @@ model Account {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([providerId, accountId])
+  @@index([userId])
   @@map("account")
 }
 
@@ -68,6 +73,7 @@ model Verification {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
+  @@index([identifier])
   @@map("verification")
 }
 
@@ -83,9 +89,10 @@ model Job {
   updatedAt   DateTime  @updatedAt
   isActive    Boolean  @default(true)
 
-  company User @relation(fields: [companyId], references: [id])
+  company User @relation(fields: [companyId], references: [id], onDelete: Cascade)
   applications Application[]
 
+  @@index([companyId])
   @@map("job")
 }
 
@@ -102,5 +109,7 @@ model Application {
   job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([jobId, userId])
+  @@index([userId])
   @@map("application")
 }

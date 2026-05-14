@@ -19,7 +19,8 @@
    ```
    
    Edit `.env` with your database credentials:
-   - `DATABASE_URL`: Your PostgreSQL connection string
+   - `DATABASE_URL`: Your runtime PostgreSQL connection string (pooled URL if you use Neon/Supabase poolers)
+   - `DIRECT_URL`: Your direct PostgreSQL connection string for Prisma CLI commands and migrations
    - `BETTER_AUTH_SECRET`: Generate a secure secret key (min 32 chars)
    - `BETTER_AUTH_URL`: Your app URL (http://localhost:3000 for dev)
    - `NEXT_PUBLIC_BETTER_AUTH_URL`: Public auth origin used by browser requests
@@ -33,7 +34,7 @@
 
 3. **Generate Prisma client**
    ```bash
-   pnpm prisma generate
+   pnpm prisma:generate
    ```
 
 4. **Push database schema**
