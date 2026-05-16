@@ -14,10 +14,11 @@ model User {
   email          String     @unique
   emailVerified  Boolean   @default(false)
   image         String?
-  verifiedAt     DateTime?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  role         String     @default("JOB_SEEKER")
+  verifiedAt                    DateTime?
+  pendingVerificationSessionId  String?   @unique
+  createdAt                     DateTime  @default(now())
+  updatedAt                     DateTime  @updatedAt
+  role                          String    @default("JOB_SEEKER")
 
   sessions     Session[]
   accounts    Account[]

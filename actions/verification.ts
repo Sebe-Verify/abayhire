@@ -33,7 +33,6 @@ export async function checkVerificationStatus(): Promise<{
 export async function completeVerification(
   sessionId: string,
 ): Promise<{ success: boolean }> {
-  void sessionId;
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -42,9 +41,11 @@ export async function completeVerification(
     throw new Error("Unauthorized");
   }
 
+  // Store the SebeVerify session ID so the webhook can link it back to this user.
+  // verifiedAt is set by the webhook once the backend confirms the result.
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { verifiedAt: new Date() },
+    data: { pendingVerificationSessionId: sessionId },
   });
 
   return { success: true };
