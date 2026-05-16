@@ -3,29 +3,35 @@ import { footerGroups } from "@/lib/site-content";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-[var(--border)] bg-[var(--surface)]">
-      <div className="container mx-auto px-6 py-14">
-        <div className="grid gap-10 lg:grid-cols-[1.2fr_repeat(4,1fr)]">
-          <div className="max-w-sm">
+    <footer className="border-t border-border bg-surface">
+      <div className="container mx-auto px-6 py-14 md:py-16">
+
+        <div className="grid gap-10 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
+
+          {/* Brand */}
+          <div>
             <Link
               href="/"
-              className="font-[family-name:var(--font-display)] text-3xl text-[var(--text)]"
+              className="font-display text-2xl tracking-tight text-text"
             >
-              Abay<span className="text-[var(--primary)]">Hire</span>
+              Abay<span className="text-primary">Hire</span>
             </Link>
-            <p className="mt-4 text-sm leading-6 text-[var(--text-muted)]">
+            <p className="mt-4 max-w-64 text-sm leading-7 text-text-muted">
               A modern hiring platform for Ethiopia and the wider African talent
-              market, built around trust, speed, and better hiring outcomes.
+              market — trust, speed, better outcomes.
             </p>
-            <p className="mt-6 text-xs leading-5 text-[var(--text-muted)]">
-              Equal opportunity hiring matters. Employers on the platform are
-              expected to follow fair hiring and data privacy practices.
-            </p>
+            <div className="mt-5 flex items-center gap-2">
+              <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+              <p className="text-xs text-text-muted">
+                Fair hiring · Data privacy · Equal opportunity
+              </p>
+            </div>
           </div>
 
+          {/* Link groups */}
           {footerGroups.map((group) => (
             <div key={group.title}>
-              <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-[var(--text)]">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-text">
                 {group.title}
               </h3>
               <ul className="mt-4 space-y-3">
@@ -33,7 +39,7 @@ export function SiteFooter() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-sm text-[var(--text-muted)] transition-colors hover:text-[var(--primary)]"
+                      className="text-sm text-text-muted transition-colors hover:text-primary"
                     >
                       {link.label}
                     </Link>
@@ -42,12 +48,14 @@ export function SiteFooter() {
               </ul>
             </div>
           ))}
+
         </div>
 
-        <div className="mt-12 flex flex-col gap-3 border-t border-[var(--border)] pt-6 text-sm text-[var(--text-muted)] md:flex-row md:items-center md:justify-between">
+        <div className="mt-12 flex flex-col gap-3 border-t border-border pt-6 text-xs text-text-muted md:flex-row md:items-center md:justify-between">
           <p>© {new Date().getFullYear()} AbayHire. All rights reserved.</p>
-          <p>Designed for trustworthy hiring workflows, mobile-first access, and long-term marketplace scale.</p>
+          <p className="hidden md:block">Built for Africa&rsquo;s hiring future.</p>
         </div>
+
       </div>
     </footer>
   );

@@ -12,13 +12,15 @@ interface NavLinkProps {
 
 function NavLink({ href, children }: NavLinkProps) {
   const pathname = usePathname();
-  const isActive = pathname === href || pathname.startsWith(href + "/");
+  const isActive = pathname === href || (href !== "/" && pathname.startsWith(href + "/"));
 
   return (
     <Link
       href={href}
-      className={`text-sm font-medium transition-colors duration-200 link-hover ${
-        isActive ? "text-[var(--primary)]" : "text-[var(--text)]"
+      className={`text-sm transition-colors duration-200 ${
+        isActive
+          ? "font-semibold text-primary"
+          : "font-medium text-text-muted hover:text-text"
       }`}
     >
       {children}
@@ -27,65 +29,64 @@ function NavLink({ href, children }: NavLinkProps) {
 }
 
 interface HeaderProps {
-  user?: {
-    name?: string | null;
-  } | null;
+  user?: { name?: string | null } | null;
   onSignOut?: () => void;
 }
 
 export function Header({ user, onSignOut }: HeaderProps) {
   return (
-    <header className="relative border-b border-[var(--border)] bg-[var(--surface)]">
-      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[linear-gradient(90deg,var(--primary)_0%,var(--accent)_50%,var(--primary)_100%)] opacity-20" />
-      <div className="container mx-auto px-6 py-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <Link
-            href="/"
-            className="font-[family-name:var(--font-display)] text-3xl text-[var(--text)] tracking-tight"
-          >
-            Abay<span className="text-[var(--primary)]">Hire</span>
-          </Link>
+    <header className="sticky top-0 z-50 border-b border-border bg-surface/95 backdrop-blur-md">
+      <div className="container mx-auto flex h-14 items-center justify-between gap-8 px-6">
 
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-8">
-            <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
-              {primaryNav.map((item) => (
-                <NavLink key={item.href} href={item.href}>
-                  {item.label}
-                </NavLink>
-              ))}
-            </nav>
+        <Link
+          href="/"
+          className="shrink-0 font-display text-xl font-semibold tracking-tight text-text"
+        >
+          Abay<span className="text-primary">Hire</span>
+        </Link>
 
-            <div className="flex flex-wrap items-center gap-4">
-              {user ? (
-                <>
-                  <NavLink href="/dashboard">Dashboard</NavLink>
-                  <form action={onSignOut}>
-                    <button
-                      type="submit"
-                      className="text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--primary)]"
-                    >
-                      Sign Out
-                    </button>
-                  </form>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/signin"
-                    className="text-sm font-medium text-[var(--text)] transition-colors hover:text-[var(--primary)]"
-                  >
-                    Sign In
-                  </Link>
-                  <Link href="/signup" className="btn-primary text-sm">
-                    Get Started
-                  </Link>
-                </>
-              )}
+        <nav className="hidden items-center gap-7 lg:flex">
+          {primaryNav.map((item) => (
+            <NavLink key={item.href} href={item.href}>
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
 
-              <ThemeToggle />
-            </div>
-          </div>
+        <div className="flex items-center gap-3">
+          {user ? (
+            <>
+              <Link
+                href="/dashboard"
+                className="text-sm font-medium text-text-muted transition-colors hover:text-text"
+              >
+                Dashboard
+              </Link>
+              <form action={onSignOut}>
+                <button
+                  type="submit"
+                  className="text-sm font-medium text-text-muted transition-colors hover:text-primary"
+                >
+                  Sign Out
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/signin"
+                className="hidden text-sm font-medium text-text-muted transition-colors hover:text-text sm:inline-block"
+              >
+                Sign In
+              </Link>
+              <Link href="/signup" className="btn-primary px-4 py-2 text-sm">
+                Get Started
+              </Link>
+            </>
+          )}
+          <ThemeToggle />
         </div>
+
       </div>
     </header>
   );

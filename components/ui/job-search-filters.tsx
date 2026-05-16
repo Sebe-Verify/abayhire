@@ -11,16 +11,15 @@ export function JobSearchFilters() {
 
   const values = useMemo(
     () => ({
-      query: searchParams.get("query") ?? "",
+      query:    searchParams.get("query")    ?? "",
       location: searchParams.get("location") ?? "",
-      type: searchParams.get("type") ?? "ALL",
+      type:     searchParams.get("type")     ?? "ALL",
     }),
     [searchParams],
   );
 
   const updateParams = (next: Record<string, string>) => {
     const params = new URLSearchParams(searchParams.toString());
-
     Object.entries(next).forEach(([key, value]) => {
       if (!value || value === "ALL") {
         params.delete(key);
@@ -28,72 +27,79 @@ export function JobSearchFilters() {
         params.set(key, value);
       }
     });
-
     router.push(`${pathname}?${params.toString()}`);
   };
 
   return (
-    <div className="card-elevated grid gap-4 p-5 lg:grid-cols-[2fr_1.3fr_1fr]">
-      <label className="block">
-        <span className="mb-2 block text-sm font-semibold text-[var(--text)]">
-          Search jobs
-        </span>
-        <input
-          type="search"
-          defaultValue={values.query}
-          placeholder="Role, company, or keyword"
-          className="input-field"
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              updateParams({
-                query: (event.target as HTMLInputElement).value,
-              });
-            }
-          }}
-          onBlur={(event) =>
-            updateParams({ query: event.target.value })
-          }
-        />
-      </label>
+    <div className="overflow-hidden rounded border border-border bg-surface shadow-sm">
+      <div className="grid lg:grid-cols-[2fr_1.3fr_1fr_auto]">
 
-      <label className="block">
-        <span className="mb-2 block text-sm font-semibold text-[var(--text)]">
-          Location
-        </span>
-        <input
-          type="text"
-          defaultValue={values.location}
-          placeholder="Addis Ababa, Remote"
-          className="input-field"
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              updateParams({
-                location: (event.target as HTMLInputElement).value,
-              });
-            }
-          }}
-          onBlur={(event) =>
-            updateParams({ location: event.target.value })
-          }
-        />
-      </label>
+        {/* Role */}
+        <label className="flex flex-col gap-1 border-b border-border p-4 lg:border-b-0 lg:border-r">
+          <span className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-text-muted">
+            Role or keyword
+          </span>
+          <input
+            type="search"
+            defaultValue={values.query}
+            placeholder="Designer, Engineer, Manager…"
+            className="bg-transparent text-sm text-text placeholder:text-text-muted focus:outline-none"
+            onKeyDown={(e) => {
+              if (e.key === "Enter")
+                updateParams({ query: (e.target as HTMLInputElement).value });
+            }}
+            onBlur={(e) => updateParams({ query: e.target.value })}
+          />
+        </label>
 
-      <label className="block">
-        <span className="mb-2 block text-sm font-semibold text-[var(--text)]">
-          Type
-        </span>
-        <select
-          value={values.type}
-          className="input-field"
-          onChange={(event) => updateParams({ type: event.target.value })}
-        >
-          {jobTypes.map((jobType) => (
-            <option key={jobType.value} value={jobType.value}>
-              {jobType.label}
-            </option>
-          ))}
-        </select>
-      </label>
+        {/* Location */}
+        <label className="flex flex-col gap-1 border-b border-border p-4 lg:border-b-0 lg:border-r">
+          <span className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-text-muted">
+            Location
+          </span>
+          <input
+            type="text"
+            defaultValue={values.location}
+            placeholder="Addis Ababa, Remote…"
+            className="bg-transparent text-sm text-text placeholder:text-text-muted focus:outline-none"
+            onKeyDown={(e) => {
+              if (e.key === "Enter")
+                updateParams({ location: (e.target as HTMLInputElement).value });
+            }}
+            onBlur={(e) => updateParams({ location: e.target.value })}
+          />
+        </label>
+
+        {/* Type */}
+        <label className="flex flex-col gap-1 border-b border-border p-4 lg:border-b-0 lg:border-r">
+          <span className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-text-muted">
+            Job type
+          </span>
+          <select
+            value={values.type}
+            className="cursor-pointer bg-transparent text-sm text-text focus:outline-none"
+            onChange={(e) => updateParams({ type: e.target.value })}
+          >
+            {jobTypes.map((jt) => (
+              <option key={jt.value} value={jt.value}>
+                {jt.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {/* Submit */}
+        <div className="flex items-stretch p-3">
+          <button
+            type="button"
+            className="btn-primary w-full text-sm lg:w-auto"
+            onClick={() => updateParams({})}
+          >
+            Search
+          </button>
+        </div>
+
+      </div>
     </div>
   );
 }

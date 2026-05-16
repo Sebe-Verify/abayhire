@@ -16,15 +16,15 @@ export function SectionHeading({
   return (
     <div className={`max-w-3xl ${alignment}`}>
       {eyebrow ? (
-        <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[var(--primary)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-primary">
           {eyebrow}
         </p>
       ) : null}
-      <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl text-[var(--text)] md:text-5xl">
+      <h2 className="mt-3 font-display text-3xl text-text md:text-5xl">
         {title}
       </h2>
       {description ? (
-        <p className="mt-4 text-base leading-7 text-[var(--text-muted)] md:text-lg">
+        <p className="mt-4 text-base leading-7 text-text-muted md:text-lg">
           {description}
         </p>
       ) : null}

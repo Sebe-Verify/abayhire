@@ -22,40 +22,39 @@ export function AuthLayout({
   footerHref,
 }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen flex gradient-mesh">
-      <div className="divider-pattern absolute top-0 left-0 right-0" />
-      
-      <div className="absolute top-6 right-6 z-10">
+    <div className="relative flex min-h-screen gradient-mesh">
+      <div className="divider-pattern absolute left-0 right-0 top-0" />
+
+      <div className="absolute right-6 top-6 z-10">
         <ThemeToggle />
       </div>
-      
-      <div className="flex-1 flex items-center justify-center p-8">
+
+      {/* Form side */}
+      <div className="flex flex-1 items-center justify-center p-8">
         <div className="w-full max-w-md">
           <div className="animate-fade-in-up">
             <Link
               href="/"
-              className="font-[family-name:var(--font-display)] text-4xl text-[var(--text)] tracking-tight inline-block mb-2"
+              className="mb-2 inline-block font-display text-4xl tracking-tight text-text"
             >
-              Abay<span className="text-[var(--primary)]">Hire</span>
+              Abay<span className="text-primary">Hire</span>
             </Link>
-            <p className="text-[var(--text-muted)] mb-8 text-lg">
+            <p className="mb-8 text-lg text-text-muted">
               Ethiopia&apos;s premier hiring platform
             </p>
           </div>
 
-          <div className="card-elevated p-8 animate-fade-in-up stagger-1 relative">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-[linear-gradient(90deg,var(--primary),var(--accent))]" />
-            
-            <h1 className="font-[family-name:var(--font-display)] text-2xl text-[var(--text)] mb-2">
-              {title}
-            </h1>
-            <p className="text-[var(--text-muted)] mb-6">{subtitle}</p>
+          <div className="card-elevated relative animate-fade-in-up p-8 stagger-1">
+            <div className="absolute left-0 right-0 top-0 h-1 rounded-t bg-linear-to-r from-primary to-accent" />
+
+            <h1 className="mb-2 font-display text-2xl text-text">{title}</h1>
+            <p className="mb-6 text-text-muted">{subtitle}</p>
 
             {children}
 
-            <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
+            <p className="mt-6 text-center text-sm text-text-muted">
               {footerText}{" "}
-              <Link href={footerHref} className="text-[var(--primary)] font-medium hover:underline">
+              <Link href={footerHref} className="font-medium text-primary hover:underline">
                 {footerLink}
               </Link>
             </p>
@@ -63,18 +62,17 @@ export function AuthLayout({
         </div>
       </div>
 
-      <div className="hidden lg:flex flex-1 items-center justify-center p-12 relative overflow-hidden">
-        <div className="absolute inset-0 ethiopian-pattern opacity-50" />
-        <div className="relative z-10 text-center max-w-md">
-          <div className="w-32 h-32 mx-auto mb-8 relative">
-            <div className="absolute inset-0 border-4 border-[var(--primary)] rotate-45 opacity-20" />
-            <div className="absolute inset-4 border-2 border-[var(--accent)] rotate-45 opacity-30" />
-            <div className="absolute inset-8 bg-[var(--primary)] opacity-10 rotate-45" />
+      {/* Decorative side */}
+      <div className="relative hidden flex-1 items-center justify-center overflow-hidden p-12 lg:flex">
+        <div className="ethiopian-pattern absolute inset-0 opacity-50" />
+        <div className="relative z-10 max-w-md text-center">
+          <div className="relative mx-auto mb-8 h-32 w-32">
+            <div className="absolute inset-0 rotate-45 border-4 border-primary opacity-20" />
+            <div className="absolute inset-4 rotate-45 border-2 border-accent opacity-30" />
+            <div className="absolute inset-8 rotate-45 bg-primary opacity-10" />
           </div>
-          <h2 className="font-[family-name:var(--font-display)] text-3xl text-[var(--text)] mb-4">
-            Find Your Path
-          </h2>
-          <p className="text-[var(--text-muted)]">
+          <h2 className="mb-4 font-display text-3xl text-text">Find Your Path</h2>
+          <p className="text-text-muted">
             Connect with Ethiopia&apos;s leading employers and discover opportunities that match your ambitions.
           </p>
         </div>
