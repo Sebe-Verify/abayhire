@@ -169,11 +169,11 @@ export default async function Home() {
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
               {featuredMetrics.map((metric, i) => (
-                <div key={metric.label} className={`animate-fade-in-up stagger-${i + 1}`}>
-                  <p className="font-display text-5xl font-bold text-primary md:text-6xl">
+                <div key={metric.label} className={`animate-fade-in-up stagger-${i + 1} text-center`}>
+                  <p className="font-display text-3xl font-bold text-primary md:text-4xl">
                     {metric.value}
                   </p>
-                  <p className="mt-2 text-sm text-neutral-400">{metric.label}</p>
+                  <p className="mt-1.5 text-xs text-neutral-400">{metric.label}</p>
                 </div>
               ))}
             </div>
