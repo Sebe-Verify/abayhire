@@ -9,7 +9,13 @@ interface User {
   email: string;
 }
 
-export function VerifyPrompt({ user }: { user: User }) {
+interface VerifyPromptProps {
+  user: User;
+  failed?: boolean;
+  failureReason?: string | null;
+}
+
+export function VerifyPrompt({ user, failed, failureReason }: VerifyPromptProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,7 +59,7 @@ export function VerifyPrompt({ user }: { user: User }) {
         projectId,
         redirectUrl: `${window.location.origin}/dashboard`,
         webAppUrl:"https://sebe-verify-sdk-git-sdk-verification-631026-dirac1235s-projects.vercel.app/"
-        
+
       });
 
       await verifier.start();
@@ -66,35 +72,70 @@ export function VerifyPrompt({ user }: { user: User }) {
     }
   };
 
+  const iconWrapperClass = failed
+    ? "w-20 h-20 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center"
+    : "w-20 h-20 mx-auto mb-6 bg-amber-100 rounded-full flex items-center justify-center";
+
+  const iconColorClass = failed ? "text-red-600" : "text-amber-600";
+
   return (
     <main className="flex-1 py-12 lg:py-20 gradient-mesh">
       <div className="container mx-auto px-6">
         <div className="max-w-lg mx-auto">
           <div className="card-elevated p-8 text-center animate-fade-in-up">
-            <div className="w-20 h-20 mx-auto mb-6 bg-amber-100 rounded-full flex items-center justify-center">
-              <svg
-                className="w-10 h-10 text-amber-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                />
-              </svg>
+            <div className={iconWrapperClass}>
+              {failed ? (
+                <svg
+                  className={`w-10 h-10 ${iconColorClass}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className={`w-10 h-10 ${iconColorClass}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  />
+                </svg>
+              )}
             </div>
 
             <h1 className="font-[family-name:var(--font-display)] text-2xl text-[var(--charcoal)] mb-3">
-              Verification Required
+              {failed ? "Verification Failed" : "Verification Required"}
             </h1>
 
-            <p className="text-[var(--warm-gray)] mb-6">
-              To protect our community, we need to verify {user.name}&apos;s
-              identity before you can access the dashboard.
-            </p>
+            {failed ? (
+              <>
+                <p className="text-[var(--warm-gray)] mb-4">
+                  {failureReason ??
+                    "Your last verification attempt didn't go through. Please try again."}
+                </p>
+                <p className="text-sm text-[var(--warm-gray)] mb-6">
+                  Make sure your ID is fully visible, well-lit, and that your
+                  selfie clearly shows your face.
+                </p>
+              </>
+            ) : (
+              <p className="text-[var(--warm-gray)] mb-6">
+                To protect our community, we need to verify {user.name}&apos;s
+                identity before you can access the dashboard.
+              </p>
+            )}
 
             {error && (
               <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg">
@@ -107,7 +148,11 @@ export function VerifyPrompt({ user }: { user: User }) {
               disabled={loading}
               className="btn-primary w-full"
             >
-              {loading ? "Starting..." : "Verify Profile"}
+              {loading
+                ? "Starting..."
+                : failed
+                  ? "Try Again"
+                  : "Verify Profile"}
             </button>
 
             <p className="mt-4 text-xs text-[var(--warm-gray)]">

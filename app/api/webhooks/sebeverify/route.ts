@@ -5,6 +5,15 @@ import { prisma } from "@/lib/prisma";
 const TERMINAL_VERIFIED = "VERIFIED";
 const TERMINAL_FAILED = new Set(["FAILED", "OCR_FAILED", "FACE_MATCH_FAILED"]);
 
+const FAILURE_REASONS: Record<string, string> = {
+  OCR_FAILED:
+    "We couldn't read your ID document clearly. Please try again with a sharper, well-lit photo.",
+  FACE_MATCH_FAILED:
+    "Your selfie didn't match the photo on your ID. Please try again in good lighting.",
+  FAILED:
+    "Verification didn't go through. Please try again.",
+};
+
 interface WebhookPayload {
   request_id: string;
   project_id: string;
@@ -39,19 +48,24 @@ export async function POST(req: NextRequest) {
 
   try {
     if (status === TERMINAL_VERIFIED) {
-      // Mark the user as identity-verified and clear the pending session.
       await prisma.user.updateMany({
         where: { pendingVerificationSessionId: sessionId },
         data: {
           verifiedAt: new Date(),
           pendingVerificationSessionId: null,
+          verificationFailedAt: null,
+          verificationFailureReason: null,
         },
       });
     } else if (TERMINAL_FAILED.has(status)) {
-      // Clear the pending session so the user can retry.
       await prisma.user.updateMany({
         where: { pendingVerificationSessionId: sessionId },
-        data: { pendingVerificationSessionId: null },
+        data: {
+          pendingVerificationSessionId: null,
+          verificationFailedAt: new Date(),
+          verificationFailureReason:
+            FAILURE_REASONS[status] ?? FAILURE_REASONS.FAILED,
+        },
       });
     }
     // Intermediate statuses (OCR_COMPLETED, FACE_MATCH_COMPLETED, PENDING) are ignored.

@@ -16,6 +16,8 @@ model User {
   image         String?
   verifiedAt                    DateTime?
   pendingVerificationSessionId  String?   @unique
+  verificationFailedAt          DateTime?
+  verificationFailureReason     String?
   createdAt                     DateTime  @default(now())
   updatedAt                     DateTime  @updatedAt
   role                          String    @default("JOB_SEEKER")

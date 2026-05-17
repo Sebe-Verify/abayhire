@@ -8,25 +8,42 @@ import "dotenv/config";
 export async function checkVerificationStatus(): Promise<{
   verified: boolean;
   verifiedAt: Date | null;
+  failed: boolean;
+  failureReason: string | null;
+  pending: boolean;
 }> {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
   if (!session?.user) {
-    return { verified: false, verifiedAt: null };
+    return {
+      verified: false,
+      verifiedAt: null,
+      failed: false,
+      failureReason: null,
+      pending: false,
+    };
   }
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { verifiedAt: true },
+    select: {
+      verifiedAt: true,
+      verificationFailedAt: true,
+      verificationFailureReason: true,
+      pendingVerificationSessionId: true,
+    },
   });
 
-  const verifiedAt = user?.verifiedAt;
+  const verifiedAt = user?.verifiedAt ?? null;
 
   return {
     verified: !!verifiedAt,
-    verifiedAt: verifiedAt || null,
+    verifiedAt,
+    failed: !verifiedAt && !!user?.verificationFailedAt,
+    failureReason: user?.verificationFailureReason ?? null,
+    pending: !verifiedAt && !!user?.pendingVerificationSessionId,
   };
 }
 
@@ -42,10 +59,15 @@ export async function completeVerification(
   }
 
   // Store the SebeVerify session ID so the webhook can link it back to this user.
-  // verifiedAt is set by the webhook once the backend confirms the result.
+  // Clear any prior failure state — this is a fresh attempt; the webhook will
+  // set verifiedAt or verificationFailedAt once the backend reports the result.
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { pendingVerificationSessionId: sessionId },
+    data: {
+      pendingVerificationSessionId: sessionId,
+      verificationFailedAt: null,
+      verificationFailureReason: null,
+    },
   });
 
   return { success: true };

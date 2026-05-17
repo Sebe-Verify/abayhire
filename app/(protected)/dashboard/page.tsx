@@ -30,7 +30,7 @@ export default async function DashboardPage({ searchParams }: Props) {
     redirect("/dashboard");
   }
 
-  const { verified } = await checkVerificationStatus();
+  const { verified, failed, failureReason } = await checkVerificationStatus();
   const role = await getUserRole();
   const applications = role === "JOB_SEEKER" ? await getMyApplications() : [];
   const employerJobs = role === "EMPLOYER" ? await getEmployerJobs() : [];
@@ -48,7 +48,11 @@ export default async function DashboardPage({ searchParams }: Props) {
     return (
       <div className="flex-1 flex flex-col min-h-screen">
         <Header user={session.user} onSignOut={handleSignOut} />
-        <VerifyPrompt user={session.user} />
+        <VerifyPrompt
+          user={session.user}
+          failed={failed}
+          failureReason={failureReason}
+        />
       </div>
     );
   }
