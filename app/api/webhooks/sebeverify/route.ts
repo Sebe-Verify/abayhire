@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
 
   try {
     if (status === TERMINAL_VERIFIED) {
-      await prisma.user.updateMany({
+      const result = await prisma.user.updateMany({
         where: { pendingVerificationSessionId: sessionId },
         data: {
           verifiedAt: new Date(),
@@ -57,8 +57,14 @@ export async function POST(req: NextRequest) {
           verificationFailureReason: null,
         },
       });
+      // If no user matched, the browser hasn't stored pendingVerificationSessionId yet
+      // (race between webhook delivery and the dashboard redirect). Return 4xx so the
+      // backend retries — by the next attempt the session ID will be in the DB.
+      if (result.count === 0) {
+        return NextResponse.json({ error: "session not registered yet" }, { status: 404 });
+      }
     } else if (TERMINAL_FAILED.has(status)) {
-      await prisma.user.updateMany({
+      const result = await prisma.user.updateMany({
         where: { pendingVerificationSessionId: sessionId },
         data: {
           pendingVerificationSessionId: null,
@@ -67,6 +73,9 @@ export async function POST(req: NextRequest) {
             FAILURE_REASONS[status] ?? FAILURE_REASONS.FAILED,
         },
       });
+      if (result.count === 0) {
+        return NextResponse.json({ error: "session not registered yet" }, { status: 404 });
+      }
     }
     // Intermediate statuses (OCR_COMPLETED, FACE_MATCH_COMPLETED, PENDING) are ignored.
   } catch (err) {
