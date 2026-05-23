@@ -7,6 +7,7 @@ import {
   checkVerificationStatus,
   completeVerification,
 } from "@/actions/verification";
+import { signOut } from "@/actions/signout";
 import { Header } from "@/components/ui/header";
 import { VerifyPrompt } from "@/components/verify-prompt";
 import { SiteFooter } from "@/components/ui/site-footer";
@@ -37,17 +38,10 @@ export default async function DashboardPage({ searchParams }: Props) {
   const recommendedJobs =
     role === "JOB_SEEKER" ? await getJobs() : [];
 
-  const handleSignOut = async () => {
-    "use server";
-    await auth.api.signOut({
-      headers: await headers(),
-    });
-  };
-
   if (!verified) {
     return (
       <div className="flex-1 flex flex-col min-h-screen">
-        <Header user={session.user} onSignOut={handleSignOut} />
+        <Header user={session.user} onSignOut={signOut} />
         <VerifyPrompt
           user={session.user}
           failed={failed}
@@ -65,7 +59,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 
   return (
     <div className="flex-1 flex flex-col min-h-screen">
-      <Header user={session.user} onSignOut={handleSignOut} />
+      <Header user={session.user} onSignOut={signOut} />
 
       <main className="flex-1 py-12 lg:py-20 gradient-mesh">
         <div className="container mx-auto px-6">

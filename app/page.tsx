@@ -4,20 +4,16 @@ import { auth } from "@/lib/auth";
 import { Header } from "@/components/ui/header";
 import { SiteFooter } from "@/components/ui/site-footer";
 import { featuredMetrics, featureHighlights } from "@/lib/site-content";
+import { signOut } from "@/actions/signout";
 
 export default async function Home() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
-  const handleSignOut = async () => {
-    "use server";
-    await auth.api.signOut({ headers: await headers() });
-  };
-
   return (
     <div className="flex min-h-screen flex-col">
-      <Header user={session?.user} onSignOut={handleSignOut} />
+      <Header user={session?.user} onSignOut={signOut} />
 
       <main className="flex-1">
 
