@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { AuthLayout } from "@/components/ui/auth-form";
-import { setUserRole } from "@/actions";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -25,13 +24,14 @@ export default function SignUpPage() {
         name,
         email,
         password,
+        // @ts-expect-error - role is an additional field configured in auth.ts
+        role,
       });
 
       if (error) {
         setError(error.message || "Failed to sign up");
         setLoading(false);
       } else {
-        await setUserRole(role);
         router.push("/dashboard");
         router.refresh();
       }

@@ -19,4 +19,13 @@ export const auth = betterAuth({
   emailAndPassword: { enabled: true },
   trustedOrigins: [appUrl],
   baseURL: appUrl,
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        defaultValue: "JOB_SEEKER",
+        input: true,
+      },
+    },
+  },
 });
