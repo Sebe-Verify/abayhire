@@ -11,6 +11,7 @@ import { signOut } from "@/actions/signout";
 import { getNotifications } from "@/actions/notifications";
 import { Header } from "@/components/ui/header";
 import { VerifyPrompt } from "@/components/verify-prompt";
+import { PendingVerification } from "@/components/pending-verification";
 import { SiteFooter } from "@/components/ui/site-footer";
 
 type Props = {
@@ -32,7 +33,7 @@ export default async function DashboardPage({ searchParams }: Props) {
     redirect("/dashboard");
   }
 
-  const [{ verified, failed, failureReason }, notifications] = await Promise.all([
+  const [{ verified, pending, failed, failureReason }, notifications] = await Promise.all([
     checkVerificationStatus(),
     getNotifications(),
   ]);
@@ -46,11 +47,15 @@ export default async function DashboardPage({ searchParams }: Props) {
     return (
       <div className="flex-1 flex flex-col min-h-screen">
         <Header user={session.user} onSignOut={signOut} notifications={notifications} />
-        <VerifyPrompt
-          user={session.user}
-          failed={failed}
-          failureReason={failureReason}
-        />
+        {pending ? (
+          <PendingVerification />
+        ) : (
+          <VerifyPrompt
+            user={session.user}
+            failed={failed}
+            failureReason={failureReason}
+          />
+        )}
       </div>
     );
   }

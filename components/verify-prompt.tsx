@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import SebeVerify from "sebeverify-sdk";
+import { completeVerification } from "@/actions/verification";
 
 interface User {
   id: string;
@@ -59,11 +60,31 @@ export function VerifyPrompt({ user, failed, failureReason }: VerifyPromptProps)
         projectId,
         redirectUrl: `${window.location.origin}/dashboard`,
         webAppUrl:"https://sebe-verify-sdk.vercel.app/"
+      });
 
+      // On mobile the page navigates inside start(), so we can't save after it resolves.
+      // Use keepalive so the request outlives the page navigation.
+      verifier.on("mobile_opened", () => {
+        const sessionId = (verifier as unknown as { sessionId: string }).sessionId;
+        if (sessionId) {
+          fetch("/api/sessions/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sessionId }),
+            keepalive: true,
+          });
+        }
       });
 
       await verifier.start();
-      // start() resolves immediately after showing the modal (desktop) or navigating (mobile).
+
+      // Desktop: start() resolves after showing the modal, before the user clicks through.
+      // Save the session ID now so the webhook can match it even before the redirect-back.
+      const sessionId = (verifier as unknown as { sessionId: string }).sessionId;
+      if (sessionId) {
+        await completeVerification(sessionId);
+      }
+
       // Re-enable the button so the user can retry if they cancel the modal.
       setLoading(false);
     } catch (e) {
