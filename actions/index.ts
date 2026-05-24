@@ -187,6 +187,7 @@ export async function applyToJob(data: z.infer<typeof applySchema>) {
     where: { id: validated.jobId },
     select: {
       id: true,
+      title: true,
       companyId: true,
       isActive: true,
     },
@@ -211,7 +212,7 @@ export async function applyToJob(data: z.infer<typeof applySchema>) {
     throw new Error("Already applied");
   }
 
-  return await prisma.application.create({
+  const application = await prisma.application.create({
     data: {
       jobId: validated.jobId,
       userId: currentUser.user.id,
@@ -220,6 +221,17 @@ export async function applyToJob(data: z.infer<typeof applySchema>) {
       status: "PENDING",
     },
   });
+
+  await prisma.notification.create({
+    data: {
+      userId: job.companyId,
+      type: "APPLICATION_RECEIVED",
+      title: "New application received",
+      message: `${currentUser.user.name || "Someone"} applied to "${job.title}".`,
+    },
+  });
+
+  return application;
 }
 
 export async function getMyApplications() {

@@ -22,13 +22,15 @@ model User {
   updatedAt                     DateTime  @updatedAt
   role                          String    @default("JOB_SEEKER")
 
-  sessions     Session[]
-  accounts    Account[]
-  jobs        Job[]
-  applications Application[]
+  sessions      Session[]
+  accounts      Account[]
+  jobs          Job[]
+  applications  Application[]
+  notifications Notification[]
 
   @@map("user")
 }
+
 
 model Session {
   id        String   @id @default(cuid())
@@ -115,4 +117,19 @@ model Application {
   @@unique([jobId, userId])
   @@index([userId])
   @@map("application")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("notification")
 }

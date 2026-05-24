@@ -8,6 +8,7 @@ import {
   completeVerification,
 } from "@/actions/verification";
 import { signOut } from "@/actions/signout";
+import { getNotifications } from "@/actions/notifications";
 import { Header } from "@/components/ui/header";
 import { VerifyPrompt } from "@/components/verify-prompt";
 import { SiteFooter } from "@/components/ui/site-footer";
@@ -31,7 +32,10 @@ export default async function DashboardPage({ searchParams }: Props) {
     redirect("/dashboard");
   }
 
-  const { verified, failed, failureReason } = await checkVerificationStatus();
+  const [{ verified, failed, failureReason }, notifications] = await Promise.all([
+    checkVerificationStatus(),
+    getNotifications(),
+  ]);
   const role = await getUserRole();
   const applications = role === "JOB_SEEKER" ? await getMyApplications() : [];
   const employerJobs = role === "EMPLOYER" ? await getEmployerJobs() : [];
@@ -41,7 +45,7 @@ export default async function DashboardPage({ searchParams }: Props) {
   if (!verified) {
     return (
       <div className="flex-1 flex flex-col min-h-screen">
-        <Header user={session.user} onSignOut={signOut} />
+        <Header user={session.user} onSignOut={signOut} notifications={notifications} />
         <VerifyPrompt
           user={session.user}
           failed={failed}
@@ -59,7 +63,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 
   return (
     <div className="flex-1 flex flex-col min-h-screen">
-      <Header user={session.user} onSignOut={signOut} />
+      <Header user={session.user} onSignOut={signOut} notifications={notifications} />
 
       <main className="flex-1 py-12 lg:py-20 gradient-mesh">
         <div className="container mx-auto px-6">

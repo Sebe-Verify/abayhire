@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { getEmployerJobs } from "@/actions";
 import { checkVerificationStatus } from "@/actions/verification";
 import { signOut } from "@/actions/signout";
+import { getNotifications } from "@/actions/notifications";
 import { Header } from "@/components/ui/header";
 import { SiteFooter } from "@/components/ui/site-footer";
 import { VerifyPrompt } from "@/components/verify-prompt";
@@ -15,13 +16,16 @@ export default async function EmployerPage() {
   });
   if (!session) redirect("/signin");
 
-  const { verified } = await checkVerificationStatus();
-  const jobs = await getEmployerJobs();
+  const [{ verified }, jobs, notifications] = await Promise.all([
+    checkVerificationStatus(),
+    getEmployerJobs(),
+    getNotifications(),
+  ]);
 
   if (!verified) {
     return (
       <div className="flex-1 flex flex-col min-h-screen">
-        <Header user={session.user} onSignOut={signOut} />
+        <Header user={session.user} onSignOut={signOut} notifications={notifications} />
         <VerifyPrompt user={session.user} />
       </div>
     );

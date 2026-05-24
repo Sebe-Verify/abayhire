@@ -5,15 +5,18 @@ import { Header } from "@/components/ui/header";
 import { SiteFooter } from "@/components/ui/site-footer";
 import { featuredMetrics, featureHighlights } from "@/lib/site-content";
 import { signOut } from "@/actions/signout";
+import { getNotifications } from "@/actions/notifications";
 
 export default async function Home() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
+  const notifications = session ? await getNotifications() : [];
+
   return (
     <div className="flex min-h-screen flex-col">
-      <Header user={session?.user} onSignOut={signOut} />
+      <Header user={session?.user} onSignOut={signOut} notifications={notifications} />
 
       <main className="flex-1">
 
