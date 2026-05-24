@@ -58,7 +58,7 @@ export function VerifyPrompt({ user, failed, failureReason }: VerifyPromptProps)
         apiKey,
         projectId,
         redirectUrl: `${window.location.origin}/dashboard`,
-        webAppUrl:"https://sebe-verify-sdk-git-sdk-verification-631026-dirac1235s-projects.vercel.app/"
+        webAppUrl:"https://sebe-verify-sdk.vercel.app/"
 
       });
 
