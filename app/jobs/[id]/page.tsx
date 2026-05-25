@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { headers } from "next/headers";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { applyToJob, getCurrentUserSummary, getJob } from "@/actions";
+import { signOut } from "@/actions/signout";
 import { Header } from "@/components/ui/header";
 import { SiteFooter } from "@/components/ui/site-footer";
 
@@ -38,14 +38,6 @@ export default async function JobDetailPage({ params }: JobPageProps) {
   const isLoggedIn = Boolean(currentUser);
   const isJobSeeker = currentUser?.role === "JOB_SEEKER";
 
-  const handleSignOut = async () => {
-    "use server";
-    const { auth } = await import("@/lib/auth");
-    await auth.api.signOut({
-      headers: await headers(),
-    });
-  };
-
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "JobPosting",
@@ -71,8 +63,8 @@ export default async function JobDetailPage({ params }: JobPageProps) {
   return (
     <div className="flex min-h-screen flex-col">
       <Header
-        user={currentUser ? { name: currentUser.name } : null}
-        onSignOut={currentUser ? handleSignOut : undefined}
+        user={currentUser ? { name: currentUser.name, email: currentUser.email } : null}
+        onSignOut={currentUser ? signOut : undefined}
       />
 
       <main className="flex-1 bg-[var(--surface)]">

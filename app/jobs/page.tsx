@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { getJobs } from "@/actions";
+import { getJobs, getCurrentUserSummary } from "@/actions";
+import { signOut } from "@/actions/signout";
+import { getNotifications } from "@/actions/notifications";
 import { Header } from "@/components/ui/header";
 import { JobCard } from "@/components/ui/job-card";
 import { JobSearchFilters } from "@/components/ui/job-search-filters";
@@ -17,17 +19,25 @@ type JobsPageProps = {
 
 export default async function JobsPage({ searchParams }: JobsPageProps) {
   const params = await searchParams;
-  const jobs = await getJobs({
-    query:    params.query,
-    location: params.location,
-    type:     params.type,
-  });
+  const [jobs, currentUser] = await Promise.all([
+    getJobs({
+      query:    params.query,
+      location: params.location,
+      type:     params.type,
+    }),
+    getCurrentUserSummary(),
+  ]);
+  const notifications = currentUser ? await getNotifications() : [];
 
   const hasFilters = Boolean(params.query || params.location || params.type);
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
+      <Header
+        user={currentUser ? { name: currentUser.name, email: currentUser.email } : null}
+        onSignOut={currentUser ? signOut : undefined}
+        notifications={notifications}
+      />
 
       <main className="flex-1">
 

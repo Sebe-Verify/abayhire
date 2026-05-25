@@ -73,7 +73,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       <main className="flex-1 py-12 lg:py-20 gradient-mesh">
         <div className="container mx-auto px-6">
           <div className="mb-10 animate-fade-in-up">
-            <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--charcoal)] mb-2">
+            <h1 className="font-[family-name:var(--font-display)] text-4xl text-(--charcoal) mb-2">
               {role === "EMPLOYER" ? "Employer Dashboard" : "Welcome Back"}
             </h1>
             <div className="flex items-center gap-2 mt-1">
