@@ -46,7 +46,7 @@ export default async function DashboardPage({ searchParams }: Props) {
   if (!verified) {
     return (
       <div className="flex-1 flex flex-col min-h-screen">
-        <Header user={session.user} onSignOut={signOut} notifications={notifications} />
+        <Header user={session.user} verified={verified} onSignOut={signOut} notifications={notifications} />
         {pending ? (
           <PendingVerification />
         ) : (

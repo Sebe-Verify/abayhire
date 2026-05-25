@@ -25,7 +25,7 @@ export default async function EmployerPage() {
   if (!verified) {
     return (
       <div className="flex-1 flex flex-col min-h-screen">
-        <Header user={session.user} onSignOut={signOut} notifications={notifications} />
+        <Header user={session.user} verified={verified} onSignOut={signOut} notifications={notifications} />
         <VerifyPrompt user={session.user} />
       </div>
     );
@@ -44,7 +44,7 @@ export default async function EmployerPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-screen">
-      <Header user={session.user} onSignOut={signOut} />
+      <Header user={session.user} verified={verified} onSignOut={signOut} />
 
       <main className="flex-1 py-12 lg:py-20 gradient-mesh">
         <div className="container mx-auto px-6">
