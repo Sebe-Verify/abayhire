@@ -33,7 +33,7 @@ export default async function DashboardPage({ searchParams }: Props) {
     redirect("/dashboard");
   }
 
-  const [{ verified, pending, failed, failureReason }, notifications] = await Promise.all([
+  const [{ verified, pending, pendingSessionId, failed, failureReason }, notifications] = await Promise.all([
     checkVerificationStatus(),
     getNotifications(),
   ]);
@@ -48,7 +48,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       <div className="flex-1 flex flex-col min-h-screen">
         <Header user={session.user} verified={verified} onSignOut={signOut} notifications={notifications} />
         {pending ? (
-          <PendingVerification />
+          <PendingVerification pendingSessionId={pendingSessionId} />
         ) : (
           <VerifyPrompt
             user={session.user}
@@ -68,7 +68,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 
   return (
     <div className="flex-1 flex flex-col min-h-screen">
-      <Header user={session.user} onSignOut={signOut} notifications={notifications} />
+      <Header user={session.user} verified={verified} onSignOut={signOut} notifications={notifications} />
 
       <main className="flex-1 py-12 lg:py-20 gradient-mesh">
         <div className="container mx-auto px-6">
@@ -76,9 +76,17 @@ export default async function DashboardPage({ searchParams }: Props) {
             <h1 className="font-[family-name:var(--font-display)] text-4xl text-[var(--charcoal)] mb-2">
               {role === "EMPLOYER" ? "Employer Dashboard" : "Welcome Back"}
             </h1>
-            <p className="text-lg text-[var(--warm-gray)]">
-              {session.user.name}
-            </p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-lg text-[var(--warm-gray)]">
+                {session.user.name}
+              </p>
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-600">
+                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Verified
+              </span>
+            </div>
           </div>
 
           {role === "EMPLOYER" ? (

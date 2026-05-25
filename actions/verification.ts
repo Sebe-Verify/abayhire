@@ -11,6 +11,7 @@ export async function checkVerificationStatus(): Promise<{
   failed: boolean;
   failureReason: string | null;
   pending: boolean;
+  pendingSessionId: string | null;
 }> {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -23,6 +24,7 @@ export async function checkVerificationStatus(): Promise<{
       failed: false,
       failureReason: null,
       pending: false,
+      pendingSessionId: null,
     };
   }
 
@@ -44,6 +46,7 @@ export async function checkVerificationStatus(): Promise<{
     failed: !verifiedAt && !!user?.verificationFailedAt,
     failureReason: user?.verificationFailureReason ?? null,
     pending: !verifiedAt && !!user?.pendingVerificationSessionId,
+    pendingSessionId: user?.pendingVerificationSessionId ?? null,
   };
 }
 
