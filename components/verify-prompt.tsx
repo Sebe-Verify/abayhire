@@ -58,7 +58,8 @@ export function VerifyPrompt({ user, failed, failureReason }: VerifyPromptProps)
         apiKey,
         projectId,
         redirectUrl: `${window.location.origin}/dashboard`,
-        webAppUrl:"https://sebe-verify-sdk.vercel.app/"
+        webAppUrl: "https://sebe-verify-sdk.vercel.app/",
+        registerSessionUrl: `${window.location.origin}/api/sessions/register`,
       });
 
       await verifier.start();
