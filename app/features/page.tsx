@@ -1,3 +1,5 @@
+import { getCurrentUserSummary } from "@/actions";
+import { signOut } from "@/actions/signout";
 import { Header } from "@/components/ui/header";
 import { SiteFooter } from "@/components/ui/site-footer";
 import { SectionHeading } from "@/components/ui/section-heading";
@@ -28,10 +30,14 @@ const roadmapRows = [
   ["Platform ops", "Billing, moderation, support, audit logs, AI oversight"],
 ];
 
-export default function FeaturesPage() {
+export default async function FeaturesPage() {
+  const currentUser = await getCurrentUserSummary();
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
+      <Header
+        user={currentUser ? { name: currentUser.name, email: currentUser.email } : null}
+        onSignOut={currentUser ? signOut : undefined}
+      />
       <main className="flex-1">
         <section className="gradient-mesh py-20 md:py-28">
           <div className="container mx-auto px-6">

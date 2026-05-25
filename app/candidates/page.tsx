@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { getCurrentUserSummary } from "@/actions";
+import { signOut } from "@/actions/signout";
 import { Header } from "@/components/ui/header";
 import { SiteFooter } from "@/components/ui/site-footer";
 import { SectionHeading } from "@/components/ui/section-heading";
@@ -18,10 +20,14 @@ const candidateJourney = [
   },
 ];
 
-export default function CandidatesPage() {
+export default async function CandidatesPage() {
+  const currentUser = await getCurrentUserSummary();
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
+      <Header
+        user={currentUser ? { name: currentUser.name, email: currentUser.email } : null}
+        onSignOut={currentUser ? signOut : undefined}
+      />
       <main className="flex-1">
         <section className="gradient-mesh py-20 md:py-28">
           <div className="container mx-auto grid gap-10 px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
